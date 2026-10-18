@@ -20,5 +20,6 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  { files: ['src/components/ui/**'], rules: { 'react-refresh/only-export-components': 'off' } },
   eslintConfigPrettier,
 ])

@@ -1,10 +1,12 @@
-import { Button } from './components/ui/button'
+import { StatusBadge } from './components/StatusBadge'
 
 function App() {
-
   return (
     <>
-      <Button>Hello</Button>
+      <StatusBadge status="applied"></StatusBadge>
+      <StatusBadge status="interview"></StatusBadge>
+      <StatusBadge status="offer"></StatusBadge>
+      <StatusBadge status="rejected"></StatusBadge>
     </>
   )
 }
