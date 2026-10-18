@@ -12,6 +12,7 @@ This is a fresh React 19 + TypeScript + Vite 8 scaffold (the stock `create-vite`
 - `npm run build` — type-check (`tsc -b`, project references) then production build to `dist/`
 - `npm run lint` — ESLint over the whole repo
 - `npm run preview` — serve the production build locally
+- `npm run format` / `npm run format:check` — Prettier write / check (`.prettierrc.json`: no semicolons, single quotes, width 100, `prettier-plugin-tailwindcss` sorts classes incl. inside `cn()`/`cva()`). ESLint uses `eslint-config-prettier` so it won't fight Prettier.
 
 - `npm run commit` — interactive Conventional Commit prompt (commitizen via `@commitlint/cz-commitlint`)
 
