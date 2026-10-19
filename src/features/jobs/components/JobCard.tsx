@@ -7,14 +7,14 @@ import {
   CardAction,
   CardContent,
   CardFooter,
-} from '../../../components/ui/card'
-import { StatusBadge } from './StatusBadge'
+} from '@/components/ui/card'
+import { StatusBadge } from '@/features/jobs/components/StatusBadge'
 import { Trash2 } from 'lucide-react'
-import type { JobApplication } from '../types'
-import { Button } from '../../../components/ui/button'
-import { formatDate } from '../../../lib/formatDate'
+import type { JobApplication } from '@/features/jobs/types'
+import { Button } from '@/components/ui/button'
+import { formatDate } from '@/lib/formatDate'
 
-type JobCard = Omit<JobApplication, 'notes'> & {
+type JobCardProps = Omit<JobApplication, 'notes'> & {
   onSelect: (id: string) => void
   onDelete: (id: string) => void
   footer?: ReactNode
@@ -30,7 +30,7 @@ export const JobCard = ({
   footer,
   onDelete,
   onSelect,
-}: JobCard) => {
+}: JobCardProps) => {
   return (
     <Card>
       <CardHeader>
@@ -41,7 +41,7 @@ export const JobCard = ({
         </CardAction>
       </CardHeader>
       <CardContent className="text-sm text-muted-foreground">
-        Applied {formatDate(createdAt, 'short')} · {interviews.length} interviews
+        Applied {formatDate(createdAt, 'short')} · {interviews.length} interview(s)
       </CardContent>
       <CardFooter className="justify-end gap-2">
         {footer}
