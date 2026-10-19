@@ -1,4 +1,4 @@
-import { StatusBadge } from './components/StatusBadge'
+import { StatusBadge } from './features/jobs/components/StatusBadge'
 
 function App() {
   return (
