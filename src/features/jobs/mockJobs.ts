@@ -1,4 +1,6 @@
-export const mockJobs = [
+import type { JobApplication } from './types'
+
+export const mockJobs: JobApplication[] = [
   {
     id: '1',
     company: 'GIC',
