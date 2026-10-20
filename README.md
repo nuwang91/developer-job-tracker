@@ -119,6 +119,12 @@ npm run commit                          # guided prompt
 echo "feat: x" | npx commitlint         # check a message without committing
 ```
 
+## Deployment
+
+Each push to `master` deploys the app to GitHub Pages at <https://nuwang91.github.io/developer-job-tracker/> through the [`deploy.yml`](.github/workflows/deploy.yml) workflow, which runs `npm ci`, then `npm run build`, and publishes `dist/`. In the repo's **Settings → Pages**, the source must be set to **GitHub Actions**. "Deploy from a branch" serves the unbuilt `index.html` and shows a blank page.
+
+Production builds use `base: '/developer-job-tracker/'` (see `vite.config.ts`); the dev server stays at `/`. MSW runs only in dev, so the deployed site has no `/api` backend.
+
 ## Roadmap / current status
 
 - [x] Job list with company/role search and status filter (UI reads `mockJobs` directly)
