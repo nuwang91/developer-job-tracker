@@ -1,73 +1,136 @@
-# React + TypeScript + Vite
+# Developer Job Tracker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A small React app for tracking job applications: company, role, status (`applied` → `interview` → `offer` / `rejected`), notes and interviews. It's a front-end-only project for now. In development, a mock REST API runs in the browser via [MSW](https://mswjs.io).
 
-Currently, two official plugins are available:
+## AI usage
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+[Claude Code](https://claude.com/claude-code) was used only to set up project configuration and tooling: ESLint, Prettier, commitlint, husky, commitizen, TypeScript and Vite config. The application code (components, types, mock API and data layer) is written by hand. [`CLAUDE.md`](CLAUDE.md) gives Claude Code context about the repo.
 
-## React Compiler
+## Tech stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Area          | Choice                                                                                   |
+| ------------- | ---------------------------------------------------------------------------------------- |
+| UI            | React 19, TypeScript 6                                                                   |
+| Build / dev   | Vite 8 (`@vitejs/plugin-react`)                                                          |
+| Styling       | Tailwind CSS v4 (`@tailwindcss/vite`), `tw-animate-css`, Geist variable font             |
+| Components    | [shadcn/ui](https://ui.shadcn.com) (`base-nova` style on `@base-ui/react`), lucide icons |
+| Variants      | `class-variance-authority` + `cn()`                                                      |
+| Mock backend  | MSW 3 service worker (dev only)                                                          |
+| Quality gates | ESLint (flat config), Prettier, commitlint + husky, commitizen                           |
 
-## Expanding the ESLint configuration
+## Getting started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install      # also installs husky git hooks via the `prepare` script
+npm run dev      # http://localhost:5173
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+In dev, `src/main.tsx` starts the MSW worker **before** rendering React, so `/api/*` requests are handled from the first render. The mock worker is not started in production builds.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Scripts
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+| Command                | What it does                                                         |
+| ---------------------- | -------------------------------------------------------------------- |
+| `npm run dev`          | Vite dev server with HMR (+ MSW mock API)                            |
+| `npm run build`        | Type-check with `tsc -b` (project references), then build to `dist/` |
+| `npm run preview`      | Serve the production build locally                                   |
+| `npm run lint`         | ESLint over the repo                                                 |
+| `npm run format`       | Prettier write                                                       |
+| `npm run format:check` | Prettier check (useful in CI)                                        |
+| `npm run commit`       | Interactive Conventional Commit prompt                               |
+
+There is no test runner yet.
+
+## Project structure
+
 ```
+src/
+├── main.tsx                 # Entry: starts MSW (dev), mounts <App /> in StrictMode
+├── App.tsx                  # Job list page: search + status filter over job cards
+├── index.css                # Tailwind v4 + shadcn theme tokens
+├── components/
+│   ├── ChipGroup.tsx        # Shared selectable chip group
+│   └── ui/                  # shadcn-generated primitives (badge, button, card, input)
+├── features/
+│   └── jobs/
+│       ├── types.ts         # JobApplication, Interview, status unions/constants
+│       ├── mockJobs.ts      # Seed data (used by MSW and currently by App)
+│       └── components/      # JobCard, JobFilters, StatusBadge
+├── lib/
+│   ├── utils.ts             # cn() helper
+│   └── formatDate.ts        # en-AU date formatting (short / long)
+└── mocks/
+    ├── browser.ts           # MSW worker setup
+    └── handlers.ts          # In-memory /api/jobs REST handlers
+public/
+└── mockServiceWorker.js     # Generated by MSW — don't edit by hand
+```
+
+Code is organized **by feature** (`src/features/<feature>/`) with shared UI in `src/components/` and generic helpers in `src/lib/`. Import from `src` using the `@/` alias (configured in `vite.config.ts` and `tsconfig.app.json`).
+
+## Domain model
+
+Defined in [`src/features/jobs/types.ts`](src/features/jobs/types.ts):
+
+```ts
+interface JobApplication {
+  id: string
+  company: string
+  role: string
+  status: 'applied' | 'interview' | 'offer' | 'rejected'
+  notes?: string
+  createdAt: string // ISO date
+  interviews: { id: string; date: string; done: boolean }[]
+}
+```
+
+Statuses come from the `APPLICATION_STATUSES` `as const` array, and the TypeScript unions are derived from it. To add a status, change that array, add its entry to the `StatusInfo` record in `StatusBadge.tsx` and add matching `--status-<name>` and `--color-status-<name>` tokens in `index.css`.
+
+## Mock API
+
+`src/mocks/handlers.ts` implements an in-memory REST API seeded from `mockJobs`. State resets on page reload, and every handler adds a short simulated `delay()`.
+
+| Method   | Path            | Body                                | Response                  |
+| -------- | --------------- | ----------------------------------- | ------------------------- |
+| `GET`    | `/api/jobs`     | —                                   | `200` `JobApplication[]`  |
+| `GET`    | `/api/jobs/:id` | —                                   | `200` job / `404`         |
+| `POST`   | `/api/jobs`     | `{ company, role, status, notes? }` | `201` created job         |
+| `PATCH`  | `/api/jobs/:id` | partial of the above                | `200` updated job / `404` |
+| `DELETE` | `/api/jobs/:id` | —                                   | `204` / `404`             |
+
+The server owns `id`, `createdAt` and `interviews`. Errors use the shape `{ message: string }`.
+
+If MSW is upgraded, regenerate the worker file with `npx msw init public`.
+
+## Conventions
+
+- **TypeScript:** `tsconfig.app.json` turns on `verbatimModuleSyntax`, so use `import type` for type-only imports. It also turns on `erasableSyntaxOnly`, which rules out `enum`, `namespace` and constructor parameter properties. Use `as const` arrays plus derived unions in their place. Unused locals and parameters are errors.
+- **Formatting:** Prettier with no semicolons, single quotes and print width 100. `prettier-plugin-tailwindcss` sorts class names, including inside `cn()` and `cva()`. ESLint extends `eslint-config-prettier`, so the two tools don't conflict.
+- **Linting:** `typescript-eslint` recommended rules (not type-aware), `react-hooks` and `react-refresh`. `react-refresh` warns when a component file also exports non-components, so keep constants and types in separate modules.
+- **UI components:** add shadcn primitives with `npx shadcn@latest add <component>`. They land in `src/components/ui/` (see `components.json`).
+- **Dates:** format dates through `formatDate()` rather than calling `toLocaleDateString` directly.
+
+## Commits
+
+Commit messages must follow [Conventional Commits](https://www.conventionalcommits.org), e.g. `feat(jobs): add job form` or `fix(badge): correct colors`. A husky `commit-msg` hook runs commitlint and rejects messages that don't conform.
+
+```bash
+npm run commit                          # guided prompt
+echo "feat: x" | npx commitlint         # check a message without committing
+```
+
+## Roadmap / current status
+
+- [x] Job list with company/role search and status filter (UI reads `mockJobs` directly)
+- [x] MSW mock REST API for jobs
+- [ ] Typed `fetch` client with `ApiError` (`src/lib/api-client.ts`, in progress) and jobs API module (`src/features/jobs/api.ts`)
+- [ ] Wire the UI to the API (loading, error and empty states)
+- [ ] Create / edit / delete jobs and manage interviews
+- [ ] Routing and a job detail view
+- [ ] Test runner (e.g. Vitest + Testing Library, reusing the MSW handlers)
+
+## Possible tooling upgrades
+
+- **Type-aware linting:** in `eslint.config.js`, swap `tseslint.configs.recommended` for `recommendedTypeChecked` or `strictTypeChecked`, and set `parserOptions.project` to `['./tsconfig.node.json', './tsconfig.app.json']`.
+- **React-specific lint rules:** [`eslint-plugin-react-x`](https://www.npmjs.com/package/eslint-plugin-react-x) and [`eslint-plugin-react-dom`](https://www.npmjs.com/package/eslint-plugin-react-dom).
+- **React Compiler:** not enabled because it slows dev and build. See the [installation docs](https://react.dev/learn/react-compiler/installation).
