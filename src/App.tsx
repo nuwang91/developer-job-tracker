@@ -34,6 +34,7 @@ function App() {
   return (
     <main className="mx-auto max-w-3xl p-6">
       <JobFilters
+        className="mb-4"
         statuses={STATUS_FILTER_OPTIONS}
         status={status}
         onStatusChange={setStatus}
