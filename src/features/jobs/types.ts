@@ -6,6 +6,8 @@ export const ALL = 'all'
 // Get the TypeScript type of the array & Get the union of all element types
 export type ApplicationStatus = (typeof APPLICATION_STATUSES)[number]
 
+export const STATUS_FILTER_OPTIONS = [ALL, ...APPLICATION_STATUSES] as const
+
 // Union of all application statuses and the "all" option
 export type StatusFilter = ApplicationStatus | typeof ALL
 

@@ -5,26 +5,32 @@ import { type StatusFilter } from '@/features/jobs/types'
 type JobFiltersProps = {
   searchText: string
   status: StatusFilter
-  statuses: StatusFilter[]
-  searchTextChange: React.Dispatch<React.SetStateAction<string>>
-  statusChange: React.Dispatch<React.SetStateAction<StatusFilter>>
+  statuses: readonly StatusFilter[]
+  onSearchTextChange: (value: string) => void
+  onStatusChange: (value: StatusFilter) => void
 }
 
 export const JobFilters = ({
   searchText,
-  searchTextChange,
+  onSearchTextChange,
   status,
-  statusChange,
+  onStatusChange,
   statuses,
 }: JobFiltersProps) => {
   return (
-    <>
-      <Input value={searchText} onChange={(e) => searchTextChange(e.target.value)}></Input>
+    <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <Input
+        value={searchText}
+        onChange={(e) => onSearchTextChange(e.target.value)}
+        aria-label="Search jobs"
+        placeholder="Job Search"
+      ></Input>
       <ChipGroup
         options={statuses}
         value={status}
-        onChange={(option) => statusChange(option)}
+        ariaLabel="Filter by status"
+        onChange={(option) => onStatusChange(option)}
       ></ChipGroup>
-    </>
+    </div>
   )
 }
