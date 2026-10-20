@@ -6,6 +6,7 @@ type JobFiltersProps = {
   searchText: string
   status: StatusFilter
   statuses: readonly StatusFilter[]
+  className: string
   onSearchTextChange: (value: string) => void
   onStatusChange: (value: StatusFilter) => void
 }
@@ -16,9 +17,12 @@ export const JobFilters = ({
   status,
   onStatusChange,
   statuses,
+  className,
 }: JobFiltersProps) => {
   return (
-    <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div
+      className={`flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between ` + className}
+    >
       <Input
         value={searchText}
         onChange={(e) => onSearchTextChange(e.target.value)}
