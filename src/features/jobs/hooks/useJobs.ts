@@ -1,25 +1,37 @@
 import { useEffect, useState } from 'react'
-import { ApiError } from '../../../lib/ApiError'
-import { getJobs } from '../api'
-import type { JobApplication } from '../types'
+import { ApiError } from '@/lib/ApiError'
+import { getJobs } from '@/features/jobs/api'
+import type { JobApplication } from '@/features/jobs/types'
 
-export type State =
+export type JobsState =
   | {
-      name: 'loading' | 'reload'
+      name: 'loading'
     }
   | { name: 'success'; data: JobApplication[] }
+  | { name: 'refreshing'; data: JobApplication[] }
   | { name: 'error'; message: string }
 
-export type Response = { state: State; reload: boolean }
+export type JobResponse = { state: JobsState; reload: () => void }
 
-export const useJobs = (reloadKey: number): Response => {
-  const [response, setResponse] = useState<Response>({ state: { name: 'loading' }, reload: false })
+export const useJobs = (): JobResponse => {
+  const [state, setState] = useState<JobsState>({ name: 'loading' })
+  // A boolean you flip back and forth is the wrong tool for “do this again”. Use a counter you never reset
+  const [reloadKey, setReloadKey] = useState(0)
+
+  const reload = () => {
+    setReloadKey((c) => c + 1)
+    if (state.name === 'success') {
+      setState({ name: 'refreshing', data: state.data })
+    } else {
+      setState({ name: 'loading' })
+    }
+  }
 
   useEffect(() => {
     const abortController = new AbortController()
     getJobs(abortController.signal)
       .then((jobs) => {
-        setResponse({ state: { name: 'success', data: jobs }, reload: reloadKey > 0 })
+        setState({ name: 'success', data: jobs })
       })
       .catch((e) => {
         if (e instanceof ApiError) {
@@ -28,12 +40,12 @@ export const useJobs = (reloadKey: number): Response => {
             console.log('Request Aborted ' + e.stack)
             return
           }
-          setResponse({ state: { name: 'error', message: e.message }, reload: reloadKey > 0 })
+          setState({ name: 'error', message: e.message })
         }
       })
 
     return () => abortController.abort()
   }, [reloadKey])
 
-  return response
+  return { state, reload }
 }
