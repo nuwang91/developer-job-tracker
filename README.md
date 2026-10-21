@@ -16,7 +16,7 @@ A small React app for tracking job applications: company, role, status (`applied
 | Components    | [shadcn/ui](https://ui.shadcn.com) (`base-nova` style on `@base-ui/react`), lucide icons |
 | Variants      | `class-variance-authority` + `cn()`                                                      |
 | Mock backend  | MSW 3 service worker (dev only)                                                          |
-| Quality gates | ESLint (flat config), Prettier, commitlint + husky, commitizen                           |
+| Quality gates | ESLint (flat config), Prettier, husky (lint-staged pre-commit, commitlint), commitizen   |
 
 ## Getting started
 
@@ -112,7 +112,7 @@ If MSW is upgraded, regenerate the worker file with `npx msw init public`.
 
 ## Commits
 
-Commit messages must follow [Conventional Commits](https://www.conventionalcommits.org), e.g. `feat(jobs): add job form` or `fix(badge): correct colors`. A husky `commit-msg` hook runs commitlint and rejects messages that don't conform.
+Commit messages must follow [Conventional Commits](https://www.conventionalcommits.org), e.g. `feat(jobs): add job form` or `fix(badge): correct colors`. A husky `commit-msg` hook runs commitlint and rejects messages that don't conform. A `pre-commit` hook runs ESLint on staged `.js/.jsx/.ts/.tsx` files through lint-staged and blocks the commit if there are lint errors.
 
 ```bash
 npm run commit                          # guided prompt
