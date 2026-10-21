@@ -15,6 +15,7 @@ const notFound = () => HttpResponse.json<ErrorBody>({ message: 'Job not found' }
 export const handlers = [
   http.get('/api/jobs', async () => {
     await delay()
+    // return HttpResponse.json({ message: 'Boom' }, { status: 500 })
     return HttpResponse.json(jobs)
   }),
 
