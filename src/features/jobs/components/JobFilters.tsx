@@ -1,12 +1,13 @@
 import { Input } from '@/components/ui/input'
 import { ChipGroup } from '@/components/ChipGroup'
 import { type StatusFilter } from '@/features/jobs/types'
+import { cn } from 'cn'
 
 type JobFiltersProps = {
   searchText: string
   status: StatusFilter
   statuses: readonly StatusFilter[]
-  className: string
+  className?: string
   onSearchTextChange: (value: string) => void
   onStatusChange: (value: StatusFilter) => void
 }
@@ -21,7 +22,10 @@ export const JobFilters = ({
 }: JobFiltersProps) => {
   return (
     <div
-      className={`flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between ` + className}
+      className={cn(
+        'flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between',
+        className,
+      )}
     >
       <Input
         value={searchText}

@@ -7,31 +7,35 @@ import {
   type JobApplication,
   STATUS_FILTER_OPTIONS,
 } from '@/features/jobs/types'
-import { Spinner } from './components/ui/spinner'
-import { getJobs, deleteJob } from './features/jobs/api'
-import { ApiError } from './lib/ApiError'
-import { toast, Toaster } from './components/ui/toast'
+import { Spinner } from '@/components/ui/spinner'
+import { getJobs, deleteJob } from '@/features/jobs/api'
+import { ApiError } from '@/lib/ApiError'
+import { toast, Toaster } from '@/components/ui/toast'
 
 function App() {
   const [status, setStatus] = useState<StatusFilter>(ALL)
   const [searchText, setSearchText] = useState('')
   const [jobs, setJobs] = useState<JobApplication[]>([])
   const [loading, setLoading] = useState(true)
-  const [refetch, setRefetch] = useState(false)
+  // A boolean you flip back and forth is the wrong tool for “do this again”. Use a counter you never reset
+  const [refetch, setRefetch] = useState(0)
   const search = searchText.trim().toLowerCase()
 
   useEffect(() => {
-    const abort = new AbortController()
-    getJobs(abort.signal)
+    const abortController = new AbortController()
+    getJobs(abortController.signal)
       .then((jobs) => {
         setJobs(jobs)
         setLoading(false)
-        setRefetch(false)
       })
       .catch((e) => {
-        setLoading(false)
-        setRefetch(false)
         if (e instanceof ApiError) {
+          if (e.info.type === 'abort') {
+            // Cancelled requests should not bother the user
+            console.log('Request Aborted ' + e.stack)
+            return
+          }
+          setLoading(false)
           toast.add({
             type: 'error',
             description: e.message,
@@ -39,6 +43,8 @@ function App() {
           })
         }
       })
+
+    return () => abortController.abort()
   }, [refetch])
 
   const visibleJobs: JobApplication[] = jobs
@@ -56,7 +62,7 @@ function App() {
   }
   const onJobDelete = (id: string) => {
     deleteJob(id)
-      .then(() => setRefetch(true))
+      .then(() => setRefetch((c) => c + 1))
       .catch((e) => {
         if (e instanceof ApiError) {
           toast.add({
@@ -71,7 +77,9 @@ function App() {
   return (
     <>
       {loading && (
-        <Spinner style={{ position: 'absolute', left: '50%', top: '50%' }} className="size-8" />
+        <div className="fixed inset-0 grid place-items-center">
+          <Spinner className="size-8" />
+        </div>
       )}
       {!loading && (
         <main className="mx-auto max-w-3xl p-6">

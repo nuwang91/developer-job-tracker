@@ -1,4 +1,4 @@
-import { ApiError } from './ApiError'
+import { ApiError } from '@/lib/ApiError'
 
 type HttpMethod = 'POST' | 'GET' | 'PATCH' | 'DELETE'
 type Options = {
@@ -6,21 +6,20 @@ type Options = {
   method?: HttpMethod
   payload?: unknown
   signal?: AbortSignal
-  headers?: HeadersInit
 }
 
 const BASE_URL = import.meta.env.VITE_BASE_API_URL ?? '/api'
 
 export const request = async <T>(options: Options): Promise<T> => {
-  const { path, method = 'GET', payload, signal, headers } = options
+  const { path, method = 'GET', payload, signal } = options
   let response: Response
 
   try {
     response = await fetch(BASE_URL + path, {
       method,
-      ...(payload ? { body: JSON.stringify(payload) } : {}),
+      ...(payload !== undefined ? { body: JSON.stringify(payload) } : {}),
       ...(signal && { signal }),
-      ...(headers && { headers }),
+      ...(payload !== undefined && { headers: { 'Content-Type': 'application/json' } }),
     })
   } catch (e) {
     if (e instanceof Error && e.name === 'AbortError') {
@@ -33,7 +32,7 @@ export const request = async <T>(options: Options): Promise<T> => {
     let message = `Request Failed ${response.statusText}`
 
     try {
-      const errorResponse = response.json()
+      const errorResponse = await response.json()
       if (
         typeof errorResponse === 'object' &&
         errorResponse != null &&
@@ -42,7 +41,7 @@ export const request = async <T>(options: Options): Promise<T> => {
       ) {
         message = errorResponse.message
       }
-    } catch (e) {
+    } catch {
       // Parsing error on failed response
     }
 
@@ -54,8 +53,8 @@ export const request = async <T>(options: Options): Promise<T> => {
   }
 
   try {
-    return response.json()
-  } catch (e) {
+    return await response.json()
+  } catch {
     throw new ApiError({ message: 'Invalid JSON', type: 'parse' })
   }
 }
