@@ -1,7 +1,7 @@
 import { Input } from '@/components/ui/input'
 import { ChipGroup } from '@/components/ChipGroup'
 import { type StatusFilter } from '@/features/jobs/types'
-import { cn } from 'cn'
+import { cn } from '@/lib/utils'
 
 type JobFiltersProps = {
   searchText: string
