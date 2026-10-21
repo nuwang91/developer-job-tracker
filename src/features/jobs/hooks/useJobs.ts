@@ -10,21 +10,23 @@ export type JobsState =
   | { name: 'success'; data: JobApplication[] }
   | { name: 'refreshing'; data: JobApplication[] }
   | { name: 'error'; message: string }
+  | { name: 'refreshing-error'; message: string }
 
 export type JobResponse = { state: JobsState; reload: () => void }
 
 export const useJobs = (): JobResponse => {
   const [state, setState] = useState<JobsState>({ name: 'loading' })
-  // A boolean you flip back and forth is the wrong tool for “do this again”. Use a counter you never reset
   const [reloadKey, setReloadKey] = useState(0)
 
   const reload = () => {
     setReloadKey((c) => c + 1)
-    if (state.name === 'success') {
-      setState({ name: 'refreshing', data: state.data })
-    } else {
-      setState({ name: 'loading' })
-    }
+    setState((prev) => {
+      if (prev.name === 'success' || prev.name === 'refreshing') {
+        return { name: 'refreshing', data: prev.data }
+      } else {
+        return { name: 'loading' }
+      }
+    })
   }
 
   useEffect(() => {
@@ -40,8 +42,14 @@ export const useJobs = (): JobResponse => {
             console.log('Request Aborted ' + e.stack)
             return
           }
-          setState({ name: 'error', message: e.message })
+          setState((prev) => {
+            if (prev.name === 'refreshing') {
+              return { name: 'refreshing-error', message: e.message }
+            }
+            return { name: 'error', message: e.message }
+          })
         }
+        return { name: 'error', message: 'Other Error' }
       })
 
     return () => abortController.abort()

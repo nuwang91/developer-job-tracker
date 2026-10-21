@@ -25,7 +25,16 @@ function App() {
 
   const { state, reload } = useJobs()
 
-  const jobs: JobApplication[] = state.name === 'success' ? state.data : []
+  if (state.name === 'refreshing-error') {
+    toast.add({
+      type: 'error',
+      description: state.message,
+      priority: 'high',
+    })
+  }
+
+  const jobs: JobApplication[] =
+    state.name === 'success' || state.name === 'refreshing' ? state.data : []
   const visibleJobs: JobApplication[] = jobs
     .filter((job) => {
       if (search === '') return true
@@ -74,7 +83,7 @@ function App() {
           onSearchTextChange={setSearchText}
         ></JobFilters>
         {state.name === 'refreshing' && (
-          <div className="inset-0 grid place-items-center">
+          <div className="grid place-items-center">
             <Spinner className="size-4 text-muted-foreground" />
           </div>
         )}
@@ -101,15 +110,11 @@ function App() {
         <ul className="grid gap-3">
           {state.name === 'loading' && (
             <>
-              <li>
-                <Skeleton className="h-32 w-full rounded-xl" />
-              </li>
-              <li>
-                <Skeleton className="h-32 w-full rounded-xl" />
-              </li>
-              <li>
-                <Skeleton className="h-32 w-full rounded-xl" />
-              </li>
+              {[1, 2, 3].map((value) => (
+                <li key={value}>
+                  <Skeleton className="h-32 w-full rounded-xl" />
+                </li>
+              ))}
             </>
           )}
 
