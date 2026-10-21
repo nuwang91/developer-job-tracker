@@ -23,10 +23,7 @@ function App() {
   const [searchText, setSearchText] = useState('')
   const search = searchText.trim().toLowerCase()
 
-  // A boolean you flip back and forth is the wrong tool for “do this again”. Use a counter you never reset
-  const [reloadKey, setReloadKey] = useState(0)
-
-  const { state, reload } = useJobs(reloadKey)
+  const { state, reload } = useJobs()
 
   const jobs: JobApplication[] = state.name === 'success' ? state.data : []
   const visibleJobs: JobApplication[] = jobs
@@ -44,7 +41,7 @@ function App() {
   }
   const onJobDelete = (id: string) => {
     deleteJob(id)
-      .then(() => setReloadKey((c) => c + 1))
+      .then(() => reload())
       .catch((e) => {
         if (e instanceof ApiError) {
           toast.add({
@@ -57,7 +54,7 @@ function App() {
   }
 
   const onRetry = () => {
-    setReloadKey((c) => c + 1)
+    reload()
   }
 
   const onClear = () => {
@@ -76,8 +73,8 @@ function App() {
           searchText={searchText}
           onSearchTextChange={setSearchText}
         ></JobFilters>
-        {reload && (
-          <div className="fixed inset-0 grid place-items-center">
+        {state.name === 'refreshing' && (
+          <div className="inset-0 grid place-items-center">
             <Spinner className="size-4 text-muted-foreground" />
           </div>
         )}
@@ -94,18 +91,26 @@ function App() {
         )}
         {state.name === 'error' && (
           <ErrorState
-            title="API Error"
+            title="Couldn’t load applications"
             icon={<AlertCircle />}
             description={state.message}
-            retry={onRetry}
+            onRetry={onRetry}
           ></ErrorState>
         )}
 
         <ul className="grid gap-3">
           {state.name === 'loading' && (
-            <li>
-              <Skeleton className="h-32 w-full rounded-xl" />
-            </li>
+            <>
+              <li>
+                <Skeleton className="h-32 w-full rounded-xl" />
+              </li>
+              <li>
+                <Skeleton className="h-32 w-full rounded-xl" />
+              </li>
+              <li>
+                <Skeleton className="h-32 w-full rounded-xl" />
+              </li>
+            </>
           )}
 
           {visibleJobs.map((job) => {
