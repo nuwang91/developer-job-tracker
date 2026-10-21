@@ -1,5 +1,5 @@
-import { request } from '../../lib/api-client'
-import type { JobApplication } from './types'
+import { request } from '@/lib/api-client'
+import type { JobApplication } from '@/features/jobs/types'
 
 type JobInput = Pick<JobApplication, 'company' | 'role' | 'status' | 'notes'>
 type JobUpdate = Partial<JobInput>
@@ -14,10 +14,9 @@ export const getJob = (id: string, signal?: AbortSignal): Promise<JobApplication
 
 export const createJob = (payload: JobInput): Promise<JobApplication> => {
   return request({
-    path: '/jobs/',
+    path: '/jobs',
     payload,
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
   })
 }
 
@@ -26,7 +25,6 @@ export const updateJob = (id: string, payload: JobUpdate): Promise<JobApplicatio
     path: `/jobs/${encodeURIComponent(id)}`,
     payload,
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
   })
 }
 
