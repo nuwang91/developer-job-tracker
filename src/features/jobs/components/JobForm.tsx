@@ -7,34 +7,40 @@ import { ChipGroup } from '@/components/ChipGroup'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { ApiError } from '@/lib/ApiError'
-import { DialogClose, DialogFooter } from '@/components/ui/dialog'
 
 type JobFormProps = {
   initialValues: JobInput
   onSubmit: (values: JobInput) => Promise<void>
   submitLabel: string
   cancelLabel: string
+  onCancel: () => void
 }
 
-export const JobForm = ({ initialValues, onSubmit, submitLabel, cancelLabel }: JobFormProps) => {
+export const JobForm = ({
+  initialValues,
+  onSubmit,
+  submitLabel,
+  cancelLabel,
+  onCancel,
+}: JobFormProps) => {
   const [formValues, setFormValues] = useState<JobInput>(initialValues)
   const [submitted, setSubmitted] = useState(false)
   const [pending, setPending] = useState(false)
   const [serverError, setServerError] = useState('')
 
-  const onFormValueChange = (event: React.ChangeEvent<HTMLFormElement, Element>) => {
-    setFormValues((prev) => {
-      return { ...prev, [event.target.id]: event.target.value.trim() }
-    })
-  }
+  const errors = validateJob(formValues)
 
   const onSave = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
     setSubmitted(true)
-    if (Object.keys(validateJob(formValues)).length !== 0) return
+    if (Object.keys(errors).length !== 0) return
     setPending(true)
     try {
-      await onSubmit(formValues)
+      await onSubmit({
+        ...formValues,
+        company: formValues.company.trim(),
+        role: formValues.role.trim(),
+      })
     } catch (e) {
       setServerError(e instanceof ApiError ? e.message : 'Something went wrong!')
     } finally {
@@ -42,10 +48,12 @@ export const JobForm = ({ initialValues, onSubmit, submitLabel, cancelLabel }: J
     }
   }
 
-  const errors = validateJob(formValues)
+  const onFieldChange = <T extends string>(key: string, value: T) => {
+    setFormValues((prev) => ({ ...prev, [key]: value }))
+  }
 
   return (
-    <form className="grid gap-4" noValidate onChange={onFormValueChange} onSubmit={onSave}>
+    <form className="grid gap-4" noValidate onSubmit={onSave}>
       <Field data-invalid={submitted && !!errors.company}>
         <FieldLabel htmlFor="company">Company</FieldLabel>
         <Input
@@ -54,6 +62,7 @@ export const JobForm = ({ initialValues, onSubmit, submitLabel, cancelLabel }: J
           placeholder="Company"
           aria-invalid={submitted && !!errors.company}
           value={formValues.company}
+          onChange={(e) => onFieldChange(e.target.id, e.target.value)}
         />
         {submitted && errors.company != null && (
           <FieldError errors={[{ message: errors.company }]} />
@@ -67,16 +76,20 @@ export const JobForm = ({ initialValues, onSubmit, submitLabel, cancelLabel }: J
           placeholder="Role"
           aria-invalid={submitted && !!errors.role}
           value={formValues.role}
+          onChange={(e) => onFieldChange(e.target.id, e.target.value)}
         />
         {submitted && errors.role != null && <FieldError errors={[{ message: errors.role }]} />}
       </Field>
 
-      <ChipGroup
-        options={APPLICATION_STATUSES}
-        value={formValues.status}
-        ariaLabel="Status on create"
-        onChange={() => {}}
-      ></ChipGroup>
+      <Field>
+        <FieldLabel>Status</FieldLabel>
+        <ChipGroup
+          options={APPLICATION_STATUSES}
+          value={formValues.status}
+          ariaLabel="Status"
+          onChange={(e) => onFieldChange('status', e)}
+        ></ChipGroup>
+      </Field>
 
       <Field data-invalid={submitted && !!errors.notes}>
         <FieldLabel htmlFor="notes">Notes</FieldLabel>
@@ -85,6 +98,7 @@ export const JobForm = ({ initialValues, onSubmit, submitLabel, cancelLabel }: J
           placeholder="Notes"
           aria-invalid={submitted && !!errors.notes}
           value={formValues.notes}
+          onChange={(e) => onFieldChange(e.target.id, e.target.value)}
         ></Textarea>
         {submitted && errors.notes != null && <FieldError errors={[{ message: errors.notes }]} />}
       </Field>
@@ -93,18 +107,14 @@ export const JobForm = ({ initialValues, onSubmit, submitLabel, cancelLabel }: J
         {serverError}
       </p>
 
-      <DialogFooter>
-        <DialogClose
-          render={
-            <Button type="button" variant="outline">
-              {cancelLabel}
-            </Button>
-          }
-        />
+      <div className="flex justify-end gap-2">
+        <Button type="button" variant="outline" onClick={onCancel}>
+          {cancelLabel}
+        </Button>
         <Button type="submit" disabled={pending}>
           {pending ? 'Saving…' : submitLabel}
         </Button>
-      </DialogFooter>
+      </div>
     </form>
   )
 }
