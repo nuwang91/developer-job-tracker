@@ -56,7 +56,7 @@ export const useJobs = ({ onRefreshError }: UseJobsOptions): JobResponse => {
       })
       .catch((e) => {
         if (e instanceof ApiError && e.info.type === 'abort') return
-        handleFailure(e.message)
+        handleFailure(e instanceof Error ? e.message : 'Something went wrong')
       })
 
     return () => abortController.abort()
