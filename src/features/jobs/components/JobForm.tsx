@@ -33,6 +33,7 @@ export const JobForm = ({
   const onSave = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
     setSubmitted(true)
+    setServerError('')
     if (Object.keys(errors).length !== 0) return
     setPending(true)
     try {
@@ -48,7 +49,7 @@ export const JobForm = ({
     }
   }
 
-  const onFieldChange = <T extends string>(key: string, value: T) => {
+  const onFieldChange = <K extends keyof JobInput>(key: K, value: JobInput[K]) => {
     setFormValues((prev) => ({ ...prev, [key]: value }))
   }
 
@@ -62,7 +63,7 @@ export const JobForm = ({
           placeholder="Company"
           aria-invalid={submitted && !!errors.company}
           value={formValues.company}
-          onChange={(e) => onFieldChange(e.target.id, e.target.value)}
+          onChange={(e) => onFieldChange('company', e.target.value)}
         />
         {submitted && errors.company != null && (
           <FieldError errors={[{ message: errors.company }]} />
@@ -76,7 +77,7 @@ export const JobForm = ({
           placeholder="Role"
           aria-invalid={submitted && !!errors.role}
           value={formValues.role}
-          onChange={(e) => onFieldChange(e.target.id, e.target.value)}
+          onChange={(e) => onFieldChange('role', e.target.value)}
         />
         {submitted && errors.role != null && <FieldError errors={[{ message: errors.role }]} />}
       </Field>
@@ -98,7 +99,7 @@ export const JobForm = ({
           placeholder="Notes"
           aria-invalid={submitted && !!errors.notes}
           value={formValues.notes}
-          onChange={(e) => onFieldChange(e.target.id, e.target.value)}
+          onChange={(e) => onFieldChange('notes', e.target.value)}
         ></Textarea>
         {submitted && errors.notes != null && <FieldError errors={[{ message: errors.notes }]} />}
       </Field>
