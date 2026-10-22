@@ -1,7 +1,6 @@
 import { request } from '@/lib/api-client'
-import type { JobApplication } from '@/features/jobs/types'
+import type { JobApplication, JobInput } from '@/features/jobs/types'
 
-type JobInput = Pick<JobApplication, 'company' | 'role' | 'status' | 'notes'>
 type JobUpdate = Partial<JobInput>
 
 export const getJobs = (signal?: AbortSignal): Promise<JobApplication[]> => {

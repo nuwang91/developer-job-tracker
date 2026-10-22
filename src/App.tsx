@@ -16,7 +16,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { EmptyState } from '@/components/EmptyState'
 import { ErrorState } from '@/components/ErrorState'
 import { Button } from '@/components/ui/button'
-import { AlertCircle, Briefcase, SearchX } from 'lucide-react'
+import { AlertCircle, Briefcase, Plus, SearchX } from 'lucide-react'
+import { CreateJobDialog } from '@/features/jobs/components/CreateJobDialog'
 
 function App() {
   const [status, setStatus] = useState<StatusFilter>(ALL)
@@ -74,6 +75,17 @@ function App() {
   return (
     <>
       <main className="mx-auto max-w-3xl p-6">
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="text-xl font-semibold">Applications</h1>
+          <CreateJobDialog
+            trigger={
+              <Button>
+                <Plus /> Add application
+              </Button>
+            }
+            onCreated={() => reload()}
+          ></CreateJobDialog>
+        </div>
         <JobFilters
           className="mb-4"
           statuses={STATUS_FILTER_OPTIONS}

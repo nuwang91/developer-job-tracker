@@ -26,3 +26,5 @@ export interface Interview {
   date: string
   done: boolean
 }
+
+export type JobInput = Pick<JobApplication, 'company' | 'role' | 'status' | 'notes'>
