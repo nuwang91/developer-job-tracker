@@ -23,9 +23,5 @@ export const validateJob = (values: JobInput): Partial<Record<keyof JobInput, st
     errors.notes = 'Notes should be within 2000 characters'
   }
 
-  if (!values.status.trim()) {
-    errors.status = 'Status is required'
-  }
-
   return errors
 }

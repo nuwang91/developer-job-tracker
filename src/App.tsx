@@ -72,6 +72,15 @@ function App() {
     setSearchText('')
   }
 
+  const onCreateSuccess = () => {
+    toast.add({
+      type: 'success',
+      title: 'Job Created Successfully',
+      priority: 'high',
+    })
+    reload()
+  }
+
   return (
     <>
       <main className="mx-auto max-w-3xl p-6">
@@ -83,7 +92,7 @@ function App() {
                 <Plus /> Add application
               </Button>
             }
-            onCreated={() => reload()}
+            onCreated={onCreateSuccess}
           ></CreateJobDialog>
         </div>
         <JobFilters

@@ -25,17 +25,20 @@ export const CreateJobDialog = ({ trigger, onCreated }: CreateJobDialogProps) =>
   }
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={trigger}>Open</DialogTrigger>
+      <DialogTrigger render={trigger}></DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create Job</DialogTitle>
-          <DialogDescription>Add your JOB</DialogDescription>
+          <DialogTitle>Add application</DialogTitle>
+          <DialogDescription>Track a new job application</DialogDescription>
         </DialogHeader>
         <JobForm
-          initialValues={{ company: '', role: '', status: 'applied' }}
+          initialValues={{ company: '', role: '', status: 'applied', notes: '' }}
           cancelLabel="Cancel"
-          submitLabel="Save changes"
+          submitLabel="Add application"
           onSubmit={onSave}
+          onCancel={() => {
+            setOpen(false)
+          }}
         ></JobForm>
       </DialogContent>
     </Dialog>
