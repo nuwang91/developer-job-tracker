@@ -37,13 +37,13 @@ export const useJobs = ({ onRefreshError }: UseJobsOptions): JobResponse => {
   const handleFailure = useEffectEvent((message: string) => {
     // An error happens while on refresh, then send the previous data with success
     if (state.name === 'refreshing') {
-      // TODO 1: go back to 'success' with the data you still have,
-      //         then call onRefreshError (it's optional, so use ?.)
+      // go back to 'success' with the data you still have,
+      // then call onRefreshError (it's optional, so use ?.)
 
       setState({ name: 'success', data: state.data })
       if (onRefreshError) onRefreshError(message)
     } else {
-      // TODO 2: blocking error (first load or retry failed)
+      // blocking error (first load or retry failed)
       setState({ name: 'error', message: message })
     }
   })
