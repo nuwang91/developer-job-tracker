@@ -23,15 +23,15 @@ function App() {
   const [searchText, setSearchText] = useState('')
   const search = searchText.trim().toLowerCase()
 
-  const { state, reload } = useJobs()
-
-  if (state.name === 'refreshing-error') {
-    toast.add({
-      type: 'error',
-      description: state.message,
-      priority: 'high',
-    })
-  }
+  const { state, reload } = useJobs({
+    onRefreshError: (message) =>
+      toast.add({
+        type: 'error',
+        title: "Couldn't refresh",
+        description: message,
+        priority: 'high',
+      }),
+  })
 
   const jobs: JobApplication[] =
     state.name === 'success' || state.name === 'refreshing' ? state.data : []
