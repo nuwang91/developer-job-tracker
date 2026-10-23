@@ -5,7 +5,7 @@ type ErrorStateProps = {
   title: string
   icon?: ReactNode
   description?: string
-  onRetry: () => void
+  onRetry?: () => void
 }
 
 export const ErrorState = ({ title, description, icon, onRetry }: ErrorStateProps) => {
@@ -14,11 +14,13 @@ export const ErrorState = ({ title, description, icon, onRetry }: ErrorStateProp
       {icon}
       <p className="font-medium text-destructive">{title}</p>
       {description && <p className="text-sm text-muted-foreground">{description}</p>}
-      <div className="mt-2">
-        <Button onClick={onRetry} variant="outline" size="sm">
-          Retry
-        </Button>
-      </div>
+      {onRetry && (
+        <div className="mt-2">
+          <Button onClick={onRetry} variant="outline" size="sm">
+            Retry
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

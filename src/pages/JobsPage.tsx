@@ -101,6 +101,10 @@ export function JobsPage() {
           setSearchParam(
             (prev) => {
               const next = new URLSearchParams(prev)
+              if (status === 'all') {
+                next.delete('status')
+                return next
+              }
               next.set('status', status)
               return next
             },
@@ -112,6 +116,10 @@ export function JobsPage() {
           setSearchParam(
             (prev) => {
               const next = new URLSearchParams(prev)
+              if (value === '') {
+                next.delete('q')
+                return next
+              }
               next.set('q', value)
               return next
             },
