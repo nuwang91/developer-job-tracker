@@ -1,7 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
+import '@/index.css'
+import { RouterProvider } from 'react-router'
+import { router } from '@/app/router.tsx'
 
 // To make sure mock server is up before React renders the UI
 async function enableMocking() {
@@ -13,7 +14,7 @@ async function enableMocking() {
 enableMocking().then(() => {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
-      <App />
+      <RouterProvider router={router} />
     </StrictMode>,
   )
 })
