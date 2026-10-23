@@ -9,8 +9,9 @@ import { toast } from '@/components/ui/toast'
 import { deleteJob } from '@/features/jobs/api'
 import { ApiError } from '@/lib/ApiError'
 import { useJob } from '@/features/jobs/hooks/useJob'
-import { ErrorState } from '@/components/ErrorState'
 import { Skeleton } from '@/components/ui/skeleton'
+import { EmptyState } from '@/components/EmptyState'
+import { ErrorState } from '@/components/ErrorState'
 
 export type JobDetailsProps = {
   id: string
@@ -65,16 +66,26 @@ export const JobDetails = ({ id }: JobDetailsProps) => {
 
       {state.name === 'loading' && (
         <>
-          <Skeleton className="h-8 w-1/2" />
+          <Skeleton className="mt-4 h-8 w-1/2" />
           <Skeleton className="mt-6 h-40 w-full rounded-xl" />
         </>
       )}
 
-      {state.name === 'error' && (
-        <ErrorState
-          title="Couldn’t load application"
+      {state.name === 'error' && state.status === 404 && (
+        <EmptyState
+          title="Application not found"
           icon={<AlertCircle />}
           description={state.message}
+          action={<Link to="/jobs">← All applications</Link>}
+        ></EmptyState>
+      )}
+
+      {state.name === 'error' && state.status !== 404 && (
+        <ErrorState
+          title="Couldn't load application"
+          icon={<AlertCircle />}
+          description={state.message}
+          onRetry={reload}
         ></ErrorState>
       )}
 
@@ -98,7 +109,7 @@ export const JobDetails = ({ id }: JobDetailsProps) => {
                   company: state.data.company,
                   status: state.data.status,
                   role: state.data.role,
-                  ...(state.data.notes && { notes: state.data.notes }),
+                  notes: state.data.notes ?? '',
                 }}
                 onUpdateJob={onEditSuccess}
               ></EditJobDialog>
