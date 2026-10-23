@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useEffectEvent, useState } from 'react'
 import { getJob } from '@/features/jobs/api'
 import type { JobApplication } from '@/features/jobs/types'
 import { ApiError } from '@/lib/ApiError'
 
-export type jobState =
+export type JobState =
   | {
       name: 'loading'
     }
@@ -11,8 +11,13 @@ export type jobState =
   | { name: 'refreshing'; data: JobApplication }
   | { name: 'error'; message: string }
 
-export const useJob = (id: string) => {
-  const [job, setJob] = useState<jobState>({ name: 'loading' })
+export type UseJobOptions = {
+  id: string
+  onRefreshError?: (message: string) => void
+}
+
+export const useJob = ({ id, onRefreshError }: UseJobOptions) => {
+  const [state, setJob] = useState<JobState>({ name: 'loading' })
   const [reloadKey, setReloadKey] = useState(0)
 
   const reload = () => {
@@ -25,6 +30,21 @@ export const useJob = (id: string) => {
     })
   }
 
+  const handleFailure = useEffectEvent((message: string) => {
+    if (state.name === 'refreshing') {
+      setJob({
+        name: 'success',
+        data: state.data,
+      })
+      if (onRefreshError) onRefreshError(message)
+    } else {
+      setJob({
+        name: 'error',
+        message,
+      })
+    }
+  })
+
   useEffect(() => {
     const abortController = new AbortController()
     getJob(id, abortController.signal)
@@ -32,15 +52,13 @@ export const useJob = (id: string) => {
         setJob({ name: 'success', data: job })
       })
       .catch((e) => {
-        if (e instanceof ApiError && e.info.type === 'abort') return
-        setJob({
-          name: 'error',
-          message: e instanceof ApiError ? e.message : 'Something went Wrong!',
-        })
+        if (e instanceof ApiError && e.info.type === 'http' && e.info.status === 404) {
+          handleFailure(e.message)
+        }
       })
 
     return () => abortController.abort()
   }, [id, reloadKey])
 
-  return { job, reload }
+  return { state, reload }
 }
