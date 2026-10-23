@@ -1,10 +1,10 @@
 import { createBrowserRouter } from 'react-router'
-import { AppLayout } from '@/AppLayout'
+import { AppLayout } from '@/app/AppLayout'
 import { AboutPage } from '@/pages/AboutPage'
 import { JobDetailsPage } from '@/pages/JobDetailsPage'
-import JobsPage from '@/pages/JobsPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { HomePage } from '@/pages/HomePage'
+import { JobsPage } from '@/pages/JobsPage'
 
 // Vite's BASE_URL is '/developer-job-tracker/' in builds and '/' in dev
 const basename = import.meta.env.BASE_URL.replace(/\/$/, '') || '/'

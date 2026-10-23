@@ -1,8 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import '@/index.css'
-import { RouterProvider } from 'react-router'
 import { router } from '@/app/router.tsx'
+import { RouterProvider } from 'react-router/dom'
 
 // To make sure mock server is up before React renders the UI
 async function enableMocking() {

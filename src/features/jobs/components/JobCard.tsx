@@ -11,11 +11,11 @@ import {
 import { StatusBadge } from '@/features/jobs/components/StatusBadge'
 import { Trash2 } from 'lucide-react'
 import type { JobApplication } from '@/features/jobs/types'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { formatDate } from '@/lib/formatDate'
+import { Link } from 'react-router'
 
 type JobCardProps = Omit<JobApplication, 'notes'> & {
-  onSelect: (id: string) => void
   onDelete: (id: string) => void
   footer?: ReactNode
 }
@@ -29,7 +29,6 @@ export const JobCard = ({
   createdAt,
   footer,
   onDelete,
-  onSelect,
 }: JobCardProps) => {
   return (
     <Card>
@@ -45,14 +44,9 @@ export const JobCard = ({
       </CardContent>
       <CardFooter className="justify-end gap-2">
         {footer}
-        <Button
-          variant="ghost"
-          size="sm"
-          aria-label={`View ${role} at ${company}`}
-          onClick={() => onSelect(id)}
-        >
+        <Link to={`/jobs/${id}`} className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
           View
-        </Button>
+        </Link>
         <Button
           variant="ghost"
           size="icon-sm"
