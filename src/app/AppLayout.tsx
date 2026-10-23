@@ -1,6 +1,6 @@
-import { cn } from 'cn'
+import { cn } from '@/lib/utils'
 import { NavLink, Outlet } from 'react-router'
-import { Toaster } from './components/ui/toast'
+import { Toaster } from '@/components/ui/toast'
 
 export const AppLayout = () => {
   return (
@@ -28,17 +28,6 @@ export const AppLayout = () => {
             to="/jobs"
           >
             Jobs
-          </NavLink>
-          <NavLink
-            className={({ isActive }) =>
-              cn(
-                'text-muted-foreground hover:text-foreground',
-                isActive && 'font-medium text-foreground',
-              )
-            }
-            to="/jobs/:id"
-          >
-            Job Details
           </NavLink>
           <NavLink
             className={({ isActive }) =>

@@ -17,11 +17,10 @@ import { ErrorState } from '@/components/ErrorState'
 import { Button } from '@/components/ui/button'
 import { AlertCircle, Briefcase, Plus, SearchX } from 'lucide-react'
 import { CreateJobDialog } from '@/features/jobs/components/CreateJobDialog'
-import { useNavigate, useSearchParams } from 'react-router'
+import { useSearchParams } from 'react-router'
 
-function JobsPage() {
+export function JobsPage() {
   const [searchParam, setSearchParam] = useSearchParams()
-  const navigate = useNavigate()
 
   const statusParam = searchParam.get('status')
   const status = isValidStatus(statusParam) ? statusParam : ALL
@@ -50,10 +49,6 @@ function JobsPage() {
       return job.status === status
     })
 
-  const selectJob = (id: string) => {
-    navigate(`${id}`)
-  }
-
   const onJobDelete = (id: string) => {
     deleteJob(id)
       .then(() => reload())
@@ -73,7 +68,7 @@ function JobsPage() {
   }
 
   const onClear = () => {
-    setSearchParam({ q: '', status: ALL }, { replace: true })
+    setSearchParam({}, { replace: true })
   }
 
   const onCreateSuccess = () => {
@@ -87,100 +82,95 @@ function JobsPage() {
 
   return (
     <>
-      <main className="mx-auto max-w-3xl p-6">
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-xl font-semibold">Applications</h1>
-          <CreateJobDialog
-            trigger={
-              <Button>
-                <Plus /> Add application
-              </Button>
-            }
-            onCreated={onCreateSuccess}
-          ></CreateJobDialog>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-xl font-semibold">Applications</h1>
+        <CreateJobDialog
+          trigger={
+            <Button>
+              <Plus /> Add application
+            </Button>
+          }
+          onCreated={onCreateSuccess}
+        ></CreateJobDialog>
+      </div>
+      <JobFilters
+        className="mb-4"
+        statuses={STATUS_FILTER_OPTIONS}
+        status={status}
+        onStatusChange={(status) =>
+          setSearchParam(
+            (prev) => {
+              const next = new URLSearchParams(prev)
+              next.set('status', status)
+              return next
+            },
+            { replace: true },
+          )
+        }
+        searchText={searchText}
+        onSearchTextChange={(value) =>
+          setSearchParam(
+            (prev) => {
+              const next = new URLSearchParams(prev)
+              next.set('q', value)
+              return next
+            },
+            { replace: true },
+          )
+        }
+      ></JobFilters>
+      {state.name === 'refreshing' && (
+        <div className="grid place-items-center">
+          <Spinner className="size-4 text-muted-foreground" />
         </div>
-        <JobFilters
-          className="mb-4"
-          statuses={STATUS_FILTER_OPTIONS}
-          status={status}
-          onStatusChange={(status) =>
-            setSearchParam(
-              (prev) => {
-                const next = new URLSearchParams(prev)
-                next.set('status', status)
-                return next
-              },
-              { replace: true },
-            )
-          }
-          searchText={searchText}
-          onSearchTextChange={(value) =>
-            setSearchParam(
-              (prev) => {
-                const next = new URLSearchParams(prev)
-                next.set('q', value)
-                return next
-              },
-              { replace: true },
-            )
-          }
-        ></JobFilters>
-        {state.name === 'refreshing' && (
-          <div className="grid place-items-center">
-            <Spinner className="size-4 text-muted-foreground" />
-          </div>
-        )}
+      )}
 
-        {jobs.length !== 0 && visibleJobs.length === 0 && (
-          <EmptyState
-            title="No matches"
-            icon={<SearchX />}
-            action={<Button onClick={onClear}>Clear filters</Button>}
-          ></EmptyState>
-        )}
-        {state.name === 'success' && jobs.length === 0 && (
-          <EmptyState title="No applications yet" icon={<Briefcase />}></EmptyState>
-        )}
-        {state.name === 'error' && (
-          <ErrorState
-            title="Couldn’t load applications"
-            icon={<AlertCircle />}
-            description={state.message}
-            onRetry={onRetry}
-          ></ErrorState>
-        )}
+      {jobs.length !== 0 && visibleJobs.length === 0 && (
+        <EmptyState
+          title="No matches"
+          icon={<SearchX />}
+          action={<Button onClick={onClear}>Clear filters</Button>}
+        ></EmptyState>
+      )}
+      {state.name === 'success' && jobs.length === 0 && (
+        <EmptyState title="No applications yet" icon={<Briefcase />}></EmptyState>
+      )}
+      {state.name === 'error' && (
+        <ErrorState
+          title="Couldn’t load applications"
+          icon={<AlertCircle />}
+          description={state.message}
+          onRetry={onRetry}
+        ></ErrorState>
+      )}
 
-        <ul className="grid gap-3">
-          {state.name === 'loading' && (
-            <>
-              {[1, 2, 3].map((value) => (
-                <li key={value}>
-                  <Skeleton className="h-32 w-full rounded-xl" />
-                </li>
-              ))}
-            </>
-          )}
-
-          {visibleJobs.map((job) => {
-            return (
-              <li key={job.id}>
-                <JobCard
-                  id={job.id}
-                  company={job.company}
-                  createdAt={job.createdAt}
-                  interviews={job.interviews}
-                  role={job.role}
-                  status={job.status}
-                  onSelect={selectJob}
-                  onDelete={onJobDelete}
-                ></JobCard>
+      <ul className="grid gap-3">
+        {state.name === 'loading' && (
+          <>
+            {[1, 2, 3].map((value) => (
+              <li key={value}>
+                <Skeleton className="h-32 w-full rounded-xl" />
               </li>
-            )
-          })}
-        </ul>
-      </main>
+            ))}
+          </>
+        )}
+
+        {visibleJobs.map((job) => {
+          return (
+            <li key={job.id}>
+              <JobCard
+                id={job.id}
+                company={job.company}
+                createdAt={job.createdAt}
+                interviews={job.interviews}
+                role={job.role}
+                status={job.status}
+                onDelete={onJobDelete}
+              ></JobCard>
+            </li>
+          )
+        })}
+      </ul>
     </>
   )
 }
-
-export default JobsPage
