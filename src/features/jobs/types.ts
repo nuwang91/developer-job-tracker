@@ -11,6 +11,10 @@ export const STATUS_FILTER_OPTIONS = [ALL, ...APPLICATION_STATUSES] as const
 // Union of all application statuses and the "all" option
 export type StatusFilter = (typeof STATUS_FILTER_OPTIONS)[number]
 
+export const isValidStatus = (value: unknown): value is StatusFilter => {
+  return STATUS_FILTER_OPTIONS.includes(value as StatusFilter)
+}
+
 export interface JobApplication {
   id: string
   company: string

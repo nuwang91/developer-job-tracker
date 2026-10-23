@@ -1,11 +1,10 @@
 import { JobCard } from '@/features/jobs/components/JobCard'
 import { JobFilters } from '@/features/jobs/components/JobFilters'
-import { useState } from 'react'
 import {
   ALL,
-  type StatusFilter,
   type JobApplication,
   STATUS_FILTER_OPTIONS,
+  isValidStatus,
 } from '@/features/jobs/types'
 import { Spinner } from '@/components/ui/spinner'
 import { deleteJob } from '@/features/jobs/api'
@@ -18,10 +17,15 @@ import { ErrorState } from '@/components/ErrorState'
 import { Button } from '@/components/ui/button'
 import { AlertCircle, Briefcase, Plus, SearchX } from 'lucide-react'
 import { CreateJobDialog } from '@/features/jobs/components/CreateJobDialog'
+import { useNavigate, useSearchParams } from 'react-router'
 
 function JobsPage() {
-  const [status, setStatus] = useState<StatusFilter>(ALL)
-  const [searchText, setSearchText] = useState('')
+  const [searchParam, setSearchParam] = useSearchParams()
+  const navigate = useNavigate()
+
+  const statusParam = searchParam.get('status')
+  const status = isValidStatus(statusParam) ? statusParam : ALL
+  const searchText = searchParam.get('q') ?? ''
   const search = searchText.trim().toLowerCase()
 
   const { state, reload } = useJobs({
@@ -47,8 +51,9 @@ function JobsPage() {
     })
 
   const selectJob = (id: string) => {
-    console.log(`selected job: ` + id)
+    navigate(`${id}`)
   }
+
   const onJobDelete = (id: string) => {
     deleteJob(id)
       .then(() => reload())
@@ -68,8 +73,7 @@ function JobsPage() {
   }
 
   const onClear = () => {
-    setStatus(ALL)
-    setSearchText('')
+    setSearchParam({ q: '', status: ALL }, { replace: true })
   }
 
   const onCreateSuccess = () => {
@@ -99,9 +103,27 @@ function JobsPage() {
           className="mb-4"
           statuses={STATUS_FILTER_OPTIONS}
           status={status}
-          onStatusChange={setStatus}
+          onStatusChange={(status) =>
+            setSearchParam(
+              (prev) => {
+                const next = new URLSearchParams(prev)
+                next.set('status', status)
+                return next
+              },
+              { replace: true },
+            )
+          }
           searchText={searchText}
-          onSearchTextChange={setSearchText}
+          onSearchTextChange={(value) =>
+            setSearchParam(
+              (prev) => {
+                const next = new URLSearchParams(prev)
+                next.set('q', value)
+                return next
+              },
+              { replace: true },
+            )
+          }
         ></JobFilters>
         {state.name === 'refreshing' && (
           <div className="grid place-items-center">
