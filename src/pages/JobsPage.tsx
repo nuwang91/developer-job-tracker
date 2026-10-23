@@ -10,7 +10,7 @@ import {
 import { Spinner } from '@/components/ui/spinner'
 import { deleteJob } from '@/features/jobs/api'
 import { ApiError } from '@/lib/ApiError'
-import { toast, Toaster } from '@/components/ui/toast'
+import { toast } from '@/components/ui/toast'
 import { useJobs } from '@/features/jobs/hooks/useJobs'
 import { Skeleton } from '@/components/ui/skeleton'
 import { EmptyState } from '@/components/EmptyState'
@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button'
 import { AlertCircle, Briefcase, Plus, SearchX } from 'lucide-react'
 import { CreateJobDialog } from '@/features/jobs/components/CreateJobDialog'
 
-function App() {
+function JobsPage() {
   const [status, setStatus] = useState<StatusFilter>(ALL)
   const [searchText, setSearchText] = useState('')
   const search = searchText.trim().toLowerCase()
@@ -157,10 +157,8 @@ function App() {
           })}
         </ul>
       </main>
-
-      <Toaster />
     </>
   )
 }
 
-export default App
+export default JobsPage
