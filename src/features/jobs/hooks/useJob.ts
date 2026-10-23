@@ -9,7 +9,7 @@ export type JobState =
     }
   | { name: 'success'; data: JobApplication }
   | { name: 'refreshing'; data: JobApplication }
-  | { name: 'error'; message: string }
+  | { name: 'error'; message: string; status?: number }
 
 export type UseJobOptions = {
   id: string
@@ -30,17 +30,18 @@ export const useJob = ({ id, onRefreshError }: UseJobOptions) => {
     })
   }
 
-  const handleFailure = useEffectEvent((message: string) => {
+  const handleFailure = useEffectEvent((e: unknown) => {
     if (state.name === 'refreshing') {
       setJob({
         name: 'success',
         data: state.data,
       })
-      if (onRefreshError) onRefreshError(message)
+      if (onRefreshError && e instanceof ApiError) onRefreshError(e.message)
     } else {
       setJob({
         name: 'error',
-        message,
+        message: e instanceof ApiError ? e.message : 'Something went wrong!',
+        status: e instanceof ApiError && e.info.type === 'http' ? e.info.status : undefined,
       })
     }
   })
@@ -52,9 +53,8 @@ export const useJob = ({ id, onRefreshError }: UseJobOptions) => {
         setJob({ name: 'success', data: job })
       })
       .catch((e) => {
-        if (e instanceof ApiError && e.info.type === 'http' && e.info.status === 404) {
-          handleFailure(e.message)
-        }
+        if (e instanceof ApiError && e.info.type === 'abort') return
+        handleFailure(e)
       })
 
     return () => abortController.abort()
