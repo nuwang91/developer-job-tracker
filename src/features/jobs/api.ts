@@ -1,5 +1,11 @@
 import { request } from '@/lib/api-client'
-import type { JobApplication, JobInput } from '@/features/jobs/types'
+import type {
+  Interview,
+  InterviewInput,
+  InterviewUpdate,
+  JobApplication,
+  JobInput,
+} from '@/features/jobs/types'
 
 type JobUpdate = Partial<JobInput>
 
@@ -29,4 +35,31 @@ export const updateJob = (id: string, payload: JobUpdate): Promise<JobApplicatio
 
 export const deleteJob = (id: string): Promise<void> => {
   return request({ path: `/jobs/${encodeURIComponent(id)}`, method: 'DELETE' })
+}
+
+export const createInterview = (id: string, payload: InterviewInput): Promise<Interview> => {
+  return request({
+    path: `/jobs/${encodeURIComponent(id)}/interviews`,
+    payload,
+    method: 'POST',
+  })
+}
+
+export const updateInterview = (
+  id: string,
+  interviewId: string,
+  payload: InterviewUpdate,
+): Promise<Interview> => {
+  return request({
+    path: `/jobs/${encodeURIComponent(id)}/interviews/${encodeURIComponent(interviewId)}`,
+    payload,
+    method: 'PATCH',
+  })
+}
+
+export const deleteInterview = (id: string, interviewId: string): Promise<void> => {
+  return request({
+    path: `/jobs/${encodeURIComponent(id)}/interviews/${encodeURIComponent(interviewId)}`,
+    method: 'DELETE',
+  })
 }

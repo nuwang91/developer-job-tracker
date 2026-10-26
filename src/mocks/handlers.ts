@@ -1,5 +1,5 @@
 import { http, HttpResponse, delay } from 'msw'
-import type { JobApplication } from '@/features/jobs/types'
+import type { Interview, JobApplication } from '@/features/jobs/types'
 import { mockJobs } from '@/features/jobs/mockJobs'
 
 // In-memory "database". Resets on page reload (that's fine for now).
@@ -8,9 +8,12 @@ let jobs: JobApplication[] = [...mockJobs]
 // What the "backend" accepts. The server owns id, createdAt and interviews.
 type CreateJobBody = Pick<JobApplication, 'company' | 'role' | 'status' | 'notes'>
 type UpdateJobBody = Partial<CreateJobBody>
+type CreateJobInterviewBody = Pick<Interview, 'date'>
+type UpdateJobInterviewBody = Pick<Interview, 'done'>
 type ErrorBody = { message: string }
 
-const notFound = () => HttpResponse.json<ErrorBody>({ message: 'Job not found' }, { status: 404 })
+const notFound = (message?: string) =>
+  HttpResponse.json<ErrorBody>({ message: message ?? 'Job not found' }, { status: 404 })
 
 export const handlers = [
   http.get('/api/jobs', async () => {
@@ -54,4 +57,72 @@ export const handlers = [
     jobs = jobs.filter((j) => j.id !== params.id)
     return new HttpResponse(null, { status: 204 })
   }),
+
+  http.post<{ id: string }, CreateJobInterviewBody>(
+    '/api/jobs/:id/interviews',
+    async ({ params, request }) => {
+      await delay()
+      const existing = jobs.find((j) => j.id === params.id)
+      if (!existing) return notFound()
+
+      const body = await request.json()
+      const interview: Interview = {
+        ...body,
+        id: crypto.randomUUID(),
+        done: false,
+      }
+      const updatedJob: JobApplication = {
+        ...existing,
+        interviews: [...existing.interviews, interview],
+      }
+      jobs = jobs.map((j) => (j.id === updatedJob.id ? updatedJob : j))
+      return HttpResponse.json(interview, { status: 201 })
+    },
+  ),
+
+  http.patch<{ id: string; interviewId: string }, UpdateJobInterviewBody>(
+    '/api/jobs/:id/interviews/:interviewId',
+    async ({ params, request }) => {
+      await delay()
+      const existingJob = jobs.find((j) => j.id === params.id)
+      if (!existingJob) return notFound()
+
+      const existingInterview = existingJob.interviews.find((i) => i.id === params.interviewId)
+      if (!existingInterview) return notFound('Interview not found')
+
+      const updatedInterview: Interview = {
+        ...existingInterview,
+        ...(await request.json()),
+        id: existingInterview.id,
+      }
+      const updatedJob: JobApplication = {
+        ...existingJob,
+        interviews: existingJob.interviews.map((i) =>
+          i.id === updatedInterview.id ? updatedInterview : i,
+        ),
+      }
+      jobs = jobs.map((j) => (j.id === updatedJob.id ? updatedJob : j))
+      return HttpResponse.json(updatedInterview)
+    },
+  ),
+
+  http.delete<{ id: string; interviewId: string }>(
+    '/api/jobs/:id/interviews/:interviewId',
+    async ({ params }) => {
+      await delay()
+      const existingJob = jobs.find((j) => j.id === params.id)
+      if (!existingJob) return notFound()
+
+      const existingInterview = existingJob.interviews.find((i) => i.id === params.interviewId)
+      if (!existingInterview) return notFound('Interview not found')
+
+      const updatedJob: JobApplication = {
+        ...existingJob,
+        interviews: existingJob.interviews.filter((i) => i.id !== existingInterview.id),
+      }
+
+      jobs = jobs.map((j) => (j.id === updatedJob.id ? updatedJob : j))
+      return new HttpResponse(null, { status: 204 })
+    },
+  ),
 ]
