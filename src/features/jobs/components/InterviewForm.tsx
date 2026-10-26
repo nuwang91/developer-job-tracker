@@ -7,6 +7,7 @@ import { ApiError } from '@/lib/ApiError'
 import { createInterview } from '@/features/jobs/api'
 import { Calendar } from '@/components/ui/calendar'
 import { formatDate } from '@/lib/formatDate'
+import { FormFooter } from '@/features/jobs/components/FormFooter'
 
 type InterviewFormProps = { id: string; onCreated: () => void; onCancel: () => void }
 
@@ -28,7 +29,8 @@ export const InterviewForm = ({ id, onCreated, onCancel }: InterviewFormProps) =
   // Even 3rd party libraries may support this approach of useActionState, but in here Calendar do not support
   // Therefore we have introduced a hidden input
   const [calendarDate, setCalendarDate] = useState<Date>(() => new Date())
-  const [state, formAction, isPending] = useActionState(
+  // There is also isPending coming from useActionState, but we dont need in this situation -> const [state, formAction, isPending] = useActionState
+  const [state, formAction] = useActionState(
     async (prevState: InterviewFormState, formData: FormData): Promise<InterviewFormState> => {
       const dateString = formData.get('date')
       setSubmitted(true)
@@ -105,14 +107,7 @@ export const InterviewForm = ({ id, onCreated, onCancel }: InterviewFormProps) =
         </p>
       )}
 
-      <div className="flex justify-end gap-2">
-        <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button type="submit" disabled={isPending}>
-          {isPending ? 'Saving…' : 'Save'}
-        </Button>
-      </div>
+      <FormFooter onCancel={onCancel}></FormFooter>
     </form>
   )
 }
