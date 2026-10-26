@@ -12,6 +12,7 @@ import { useJob } from '@/features/jobs/hooks/useJob'
 import { Skeleton } from '@/components/ui/skeleton'
 import { EmptyState } from '@/components/EmptyState'
 import { ErrorState } from '@/components/ErrorState'
+import { JobInterviews } from './JobInterviews'
 
 export type JobDetailsProps = {
   id: string
@@ -129,6 +130,13 @@ export const JobDetails = ({ id }: JobDetailsProps) => {
                 <dt className="text-muted-foreground">Notes</dt>
                 <dd className="whitespace-pre-wrap">{state.data.notes || '—'}</dd>
               </dl>
+              <JobInterviews
+                id={state.data.id}
+                interviews={state.data.interviews}
+                onCreated={() => reload()}
+                onUpdated={() => reload()}
+                onDeleted={() => reload()}
+              ></JobInterviews>
             </CardContent>
           </Card>
         </>

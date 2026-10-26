@@ -32,3 +32,6 @@ export interface Interview {
 }
 
 export type JobInput = Pick<JobApplication, 'company' | 'role' | 'status' | 'notes'>
+
+export type InterviewInput = Pick<Interview, 'date'>
+export type InterviewUpdate = Pick<Interview, 'done'>
