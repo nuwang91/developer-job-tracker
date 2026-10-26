@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import type { Interview } from '../types'
+import type { Interview } from '@/features/jobs/types'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   Empty,
@@ -19,11 +19,11 @@ import {
 } from '@/components/ui/empty'
 import { Button } from '@/components/ui/button'
 import { BriefcaseBusiness, Plus, Trash } from 'lucide-react'
-import { formatDate } from '../../../lib/formatDate'
-import { CreateInterviewDialog } from './CreateInterviewDialog'
-import { deleteInterview, updateInterview } from '../api'
-import { toast } from '../../../components/ui/toast'
-import { ApiError } from '../../../lib/ApiError'
+import { formatDate } from '@/lib/formatDate'
+import { CreateInterviewDialog } from '@/features/jobs/components/CreateInterviewDialog'
+import { deleteInterview, updateInterview } from '@/features/jobs/api'
+import { toast } from '@/components/ui/toast'
+import { ApiError } from '@/lib/ApiError'
 
 type JobInterviewsProps = {
   id: string
