@@ -24,22 +24,17 @@ import { CreateInterviewDialog } from '@/features/jobs/components/CreateIntervie
 import { deleteInterview, updateInterview } from '@/features/jobs/api'
 import { toast } from '@/components/ui/toast'
 import { ApiError } from '@/lib/ApiError'
+import { useState } from 'react'
 
 type JobInterviewsProps = {
   id: string
   interviews: Interview[]
-  onCreated: () => void
-  onUpdated: () => void
-  onDeleted: () => void
+  onChange: () => void
 }
-export const JobInterviews = ({
-  id,
-  interviews,
-  onCreated,
-  onUpdated,
-  onDeleted,
-}: JobInterviewsProps) => {
+export const JobInterviews = ({ id, interviews, onChange }: JobInterviewsProps) => {
+  const [pending, setPending] = useState(false)
   const onDoneChanges = async (checked: boolean, interviewId: string) => {
+    setPending(true)
     try {
       const interview: Interview = await updateInterview(id, interviewId, { done: checked })
       toast.add({
@@ -47,7 +42,7 @@ export const JobInterviews = ({
         title: `Interview on (${formatDate(interview.date, 'short')}) updated successfully`,
         priority: 'high',
       })
-      onUpdated()
+      onChange()
     } catch (e) {
       toast.add({
         type: 'error',
@@ -55,10 +50,13 @@ export const JobInterviews = ({
         description: e instanceof ApiError ? e.message : 'Something went wrong!',
         priority: 'high',
       })
+    } finally {
+      setPending(false)
     }
   }
 
   const onInterviewDelete = async (interviewId: string) => {
+    setPending(true)
     try {
       await deleteInterview(id, interviewId)
       toast.add({
@@ -66,7 +64,7 @@ export const JobInterviews = ({
         title: `Interview deleted successfully`,
         priority: 'high',
       })
-      onDeleted()
+      onChange()
     } catch (e) {
       toast.add({
         type: 'error',
@@ -74,21 +72,19 @@ export const JobInterviews = ({
         description: e instanceof ApiError ? e.message : 'Something went wrong!',
         priority: 'high',
       })
+    } finally {
+      setPending(false)
     }
   }
 
   const onInterviewCreated = () => {
-    toast.add({
-      type: 'success',
-      title: 'Interview Created Successfully',
-      priority: 'high',
-    })
-    onCreated()
+    onChange()
   }
 
-  const CreateInterviewDialogContainer = () => {
+  const addInterview = () => {
     return (
       <CreateInterviewDialog
+        key={id}
         id={id}
         trigger={
           <Button aria-label="Add interview" size="sm" variant="outline">
@@ -104,11 +100,11 @@ export const JobInterviews = ({
   return (
     <section className="mt-3">
       <div className="mb-2 flex items-center justify-between">
-        <h3 className="text-sm font-semibold">
+        <h2 className="text-sm font-semibold">
           Interviews
           <span className="ml-2 text-muted-foreground">({interviews.length})</span>
-        </h3>
-        {CreateInterviewDialogContainer()}
+        </h2>
+        {addInterview()}
       </div>
       <Table>
         <TableCaption>A list of your interviews, with earliest date first.</TableCaption>
@@ -123,21 +119,27 @@ export const JobInterviews = ({
           {interviews.length > 0 ? (
             interviews
               .toSorted((a, b) => {
-                return new Date(b.date).getTime() - new Date(a.date).getTime()
+                return new Date(a.date).getTime() - new Date(b.date).getTime()
               })
               .map((i) => (
                 <TableRow key={i.id}>
                   <TableCell>{formatDate(i.date, 'long')}</TableCell>
                   <TableCell>
                     <Checkbox
-                      aria-label="Mark as checked"
-                      aria-checked={i.done}
-                      defaultChecked={i.done}
+                      aria-label={`Mark as ${i.done ? 'unchecked' : 'checked'} for interview on ${formatDate(i.date, 'long')}`}
+                      checked={i.done}
+                      disabled={pending}
                       onCheckedChange={(checked) => onDoneChanges(checked, i.id)}
                     />
                   </TableCell>
                   <TableCell>
-                    <Button aria-label="Delete Interview" onClick={() => onInterviewDelete(i.id)}>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label={`Delete interview on ${formatDate(i.date, 'long')}`}
+                      disabled={pending}
+                      onClick={() => onInterviewDelete(i.id)}
+                    >
                       <Trash />
                     </Button>
                   </TableCell>
@@ -145,16 +147,16 @@ export const JobInterviews = ({
               ))
           ) : (
             <TableRow className="hover:bg-transparent">
-              <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
+              <TableCell colSpan={3} className="h-32 text-center text-muted-foreground">
                 <Empty>
                   <EmptyHeader>
                     <EmptyMedia variant="icon">
                       <BriefcaseBusiness />
                     </EmptyMedia>
-                    <EmptyTitle>No data</EmptyTitle>
-                    <EmptyDescription>No data found</EmptyDescription>
+                    <EmptyTitle>No interviews</EmptyTitle>
+                    <EmptyDescription>No interviews yet</EmptyDescription>
                   </EmptyHeader>
-                  <EmptyContent>{CreateInterviewDialogContainer()}</EmptyContent>
+                  <EmptyContent>{addInterview()}</EmptyContent>
                 </Empty>
               </TableCell>
             </TableRow>

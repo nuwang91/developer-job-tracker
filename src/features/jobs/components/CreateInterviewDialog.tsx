@@ -43,6 +43,13 @@ export const CreateInterviewDialog = ({ trigger, id, onCreated }: CreateIntervie
     setFormValues((prev) => ({ ...prev, [key]: value }))
   }
 
+  const resetStates = () => {
+    setFormValues({ date: new Date() })
+    setSubmitted(false)
+    setPending(false)
+    setServerError('')
+  }
+
   const onSave = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
     setSubmitted(true)
@@ -51,7 +58,7 @@ export const CreateInterviewDialog = ({ trigger, id, onCreated }: CreateIntervie
     setPending(true)
     try {
       await createInterview(id, { date: formValues.date.toISOString() })
-      setFormValues({ date: new Date() })
+      // setFormValues({ date: new Date() })
       setOpen(false)
       onCreated()
     } catch (e) {
@@ -62,7 +69,13 @@ export const CreateInterviewDialog = ({ trigger, id, onCreated }: CreateIntervie
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(e) => {
+        setOpen(e)
+        if (e) resetStates()
+      }}
+    >
       <DialogTrigger render={trigger}></DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -76,6 +89,7 @@ export const CreateInterviewDialog = ({ trigger, id, onCreated }: CreateIntervie
               <PopoverTrigger
                 render={
                   <Button
+                    id="date-picker"
                     variant={'outline'}
                     data-empty={!formValues.date}
                     className="w-53 justify-between text-left font-normal data-[empty=true]:text-muted-foreground"
@@ -91,7 +105,6 @@ export const CreateInterviewDialog = ({ trigger, id, onCreated }: CreateIntervie
               />
               <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
-                  id="date-picker"
                   mode="single"
                   selected={formValues.date}
                   aria-invalid={submitted && !!errors.date}
