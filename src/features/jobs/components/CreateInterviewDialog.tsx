@@ -8,16 +8,16 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 
-import { Field, FieldError, FieldLabel } from '../../../components/ui/field'
+import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 
-import { Button } from '../../../components/ui/button'
+import { Button } from '@/components/ui/button'
 
 import { ChevronDownIcon } from 'lucide-react'
-import { Popover, PopoverContent, PopoverTrigger } from '../../../components/ui/popover'
-import { Calendar } from '../../../components/ui/calendar'
-import { formatDate } from '../../../lib/formatDate'
-import { ApiError } from '../../../lib/ApiError'
-import { createInterview } from '../api'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Calendar } from '@/components/ui/calendar'
+import { formatDate } from '@/lib/formatDate'
+import { ApiError } from '@/lib/ApiError'
+import { createInterview } from '@/features/jobs/api'
 
 type CreateInterviewDialogProps = {
   trigger: ReactElement
