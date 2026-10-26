@@ -77,6 +77,15 @@ export const JobInterviews = ({
     }
   }
 
+  const onInterviewCreated = () => {
+    toast.add({
+      type: 'success',
+      title: 'Interview Created Successfully',
+      priority: 'high',
+    })
+    onCreated()
+  }
+
   const CreateInterviewDialogContainer = () => {
     return (
       <CreateInterviewDialog
@@ -87,7 +96,7 @@ export const JobInterviews = ({
             Add interview
           </Button>
         }
-        onCreated={onCreated}
+        onCreated={onInterviewCreated}
       ></CreateInterviewDialog>
     )
   }
