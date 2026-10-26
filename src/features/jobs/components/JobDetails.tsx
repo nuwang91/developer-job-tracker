@@ -133,9 +133,7 @@ export const JobDetails = ({ id }: JobDetailsProps) => {
               <JobInterviews
                 id={state.data.id}
                 interviews={state.data.interviews}
-                onCreated={() => reload()}
-                onUpdated={() => reload()}
-                onDeleted={() => reload()}
+                onChange={() => reload()}
               ></JobInterviews>
             </CardContent>
           </Card>
