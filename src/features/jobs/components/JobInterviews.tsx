@@ -33,15 +33,11 @@ type JobInterviewsProps = {
 }
 export const JobInterviews = ({ id, interviews, onChange }: JobInterviewsProps) => {
   const [pending, setPending] = useState(false)
+
   const onDoneChanges = async (checked: boolean, interviewId: string) => {
     setPending(true)
     try {
-      const interview: Interview = await updateInterview(id, interviewId, { done: checked })
-      toast.add({
-        type: 'success',
-        title: `Interview on (${formatDate(interview.date, 'short')}) updated successfully`,
-        priority: 'high',
-      })
+      await updateInterview(id, interviewId, { done: checked })
       onChange()
     } catch (e) {
       toast.add({
@@ -78,13 +74,17 @@ export const JobInterviews = ({ id, interviews, onChange }: JobInterviewsProps) 
   }
 
   const onInterviewCreated = () => {
+    toast.add({
+      type: 'success',
+      title: 'Interview Created Successfully',
+      priority: 'high',
+    })
     onChange()
   }
 
   const addInterview = () => {
     return (
       <CreateInterviewDialog
-        key={id}
         id={id}
         trigger={
           <Button aria-label="Add interview" size="sm" variant="outline">
@@ -126,7 +126,7 @@ export const JobInterviews = ({ id, interviews, onChange }: JobInterviewsProps) 
                   <TableCell>{formatDate(i.date, 'long')}</TableCell>
                   <TableCell>
                     <Checkbox
-                      aria-label={`Mark as ${i.done ? 'unchecked' : 'checked'} for interview on ${formatDate(i.date, 'long')}`}
+                      aria-label={`Interview on ${formatDate(i.date, 'long')} done`}
                       checked={i.done}
                       disabled={pending}
                       onCheckedChange={(checked) => onDoneChanges(checked, i.id)}
