@@ -13,40 +13,32 @@ type InterviewFormProps = { id: string; onCreated: () => void; onCancel: () => v
 
 type InterviewFormState =
   | {
-      error: { type: 'server'; message: string }
-    }
-  | {
-      error: {
-        type: 'other'
-        message: string
-      }
+      error: { type: 'server' | 'validation'; message: string }
     }
   | { error: null }
 
 export const InterviewForm = ({ id, onCreated, onCancel }: InterviewFormProps) => {
-  const [submitted, setSubmitted] = useState(false)
   // We have to keep useState here because Calendar control is not a native html where it supports name attribute
   // Even 3rd party libraries may support this approach of useActionState, but in here Calendar do not support
   // Therefore we have introduced a hidden input
   const [calendarDate, setCalendarDate] = useState<Date>(() => new Date())
   // There is also isPending coming from useActionState, but we dont need in this situation -> const [state, formAction, isPending] = useActionState
   const [state, formAction] = useActionState(
-    async (prevState: InterviewFormState, formData: FormData): Promise<InterviewFormState> => {
+    async (_prevState: InterviewFormState, formData: FormData): Promise<InterviewFormState> => {
       const dateString = formData.get('date')
-      setSubmitted(true)
       if (!dateString)
         return {
           error: {
             message: 'Date is required',
-            type: 'other',
+            type: 'validation',
           },
         }
       try {
         const date = new Date(dateString.toString())
-        if (Number.isNaN(date.getTime())) {
+        if (typeof dateString === 'string' && Number.isNaN(date.getTime())) {
           return {
             error: {
-              type: 'other',
+              type: 'validation',
               message: 'Invalid date',
             },
           }
@@ -68,8 +60,9 @@ export const InterviewForm = ({ id, onCreated, onCancel }: InterviewFormProps) =
 
   return (
     <form className="grid gap-4" action={formAction} noValidate>
-      <Field data-invalid={submitted && !!state.error}>
+      <Field data-invalid={!!state.error && state.error.type === 'validation'}>
         <FieldLabel htmlFor="date-picker">Date</FieldLabel>
+        {/* For useActionState work, we need the name attribute on input */}
         <input type="hidden" name="date" value={calendarDate.toISOString()} />
         <Popover>
           <PopoverTrigger
@@ -94,12 +87,11 @@ export const InterviewForm = ({ id, onCreated, onCancel }: InterviewFormProps) =
               mode="single"
               selected={calendarDate}
               onSelect={(d) => d && setCalendarDate(d)}
-              aria-invalid={submitted && !!state.error}
               defaultMonth={calendarDate}
             />
           </PopoverContent>
         </Popover>
-        {submitted && !!state.error && <FieldError errors={[{ message: state.error.message }]} />}
+        {!!state.error && <FieldError errors={[{ message: state.error.message }]} />}
       </Field>
       {!!state.error && state.error.type === 'server' && (
         <p role="alert" className="text-sm text-destructive">
@@ -107,7 +99,7 @@ export const InterviewForm = ({ id, onCreated, onCancel }: InterviewFormProps) =
         </p>
       )}
 
-      <FormFooter onCancel={onCancel}></FormFooter>
+      <FormFooter submitLabel="Save" onCancel={onCancel}></FormFooter>
     </form>
   )
 }

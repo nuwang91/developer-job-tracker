@@ -3,9 +3,10 @@ import { useFormStatus } from 'react-dom'
 
 type FormFooterProps = {
   onCancel: () => void
+  submitLabel: string
 }
 
-export const FormFooter = ({ onCancel }: FormFooterProps) => {
+export const FormFooter = ({ onCancel, submitLabel }: FormFooterProps) => {
   // Can access pending state when the component (i.e FormFooter) is within <form> tag inside component InterviewForm
   const { pending } = useFormStatus()
 
@@ -15,7 +16,7 @@ export const FormFooter = ({ onCancel }: FormFooterProps) => {
         Cancel
       </Button>
       <Button type="submit" disabled={pending}>
-        {pending ? 'Saving…' : 'Save'}
+        {pending ? 'Saving…' : submitLabel}
       </Button>
     </div>
   )
