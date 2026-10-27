@@ -29,7 +29,7 @@ There is no test runner configured yet.
 
 ## Commits
 
-Commit messages must follow Conventional Commits (`type(scope): subject`, e.g. `feat(jobs): add job form`). A husky `commit-msg` hook runs commitlint (`commitlint.config.js`, extends `@commitlint/config-conventional`) and rejects non-conforming messages. A husky `pre-commit` hook runs lint-staged (config in `package.json`), which runs ESLint on staged `*.{js,jsx,ts,tsx}` files only and blocks the commit on errors. Check a message without committing via `echo "feat: x" | npx commitlint`.
+Commit messages must follow Conventional Commits (`type(scope): subject`, e.g. `feat(jobs): add job form`). A husky `commit-msg` hook runs commitlint (`commitlint.config.js`, extends `@commitlint/config-conventional`) and rejects non-conforming messages. A husky `pre-commit` hook runs lint-staged (config in `package.json`), which runs ESLint on staged `*.{js,jsx,ts,tsx}` files only and blocks the commit on errors. Type-checking is not in the hook: `.github/workflows/ci.yml` runs lint, `format:check` and `build` (`tsc -b` + Vite) on PRs to `master`. Check a message without committing via `echo "feat: x" | npx commitlint`.
 
 ## Architecture
 

@@ -1,1 +1,1 @@
-npx --no -- lint-staged & tsc -b --noEmit
+npx --no -- lint-staged
