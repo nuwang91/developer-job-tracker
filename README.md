@@ -16,17 +16,17 @@ A small React app for tracking job applications: company, role, status (`applied
 
 ## Tech stack
 
-| Area          | Choice                                                                                   |
-| ------------- | ---------------------------------------------------------------------------------------- |
-| UI            | React 19 (form actions: `useActionState`, `useFormStatus`), TypeScript 6                 |
-| Routing       | React Router 8 (`createBrowserRouter`, URL search params)                                |
-| Build / dev   | Vite 8 (`@vitejs/plugin-react`)                                                          |
-| Styling       | Tailwind CSS v4 (`@tailwindcss/vite`), `tw-animate-css`, Geist variable font             |
-| Components    | [shadcn/ui](https://ui.shadcn.com) (`base-nova` style on `@base-ui/react`), lucide icons |
-| Dates         | `date-fns`, `react-day-picker` (shadcn calendar)                                         |
-| Variants      | `class-variance-authority` + `cn()`                                                      |
-| Mock backend  | MSW 3 service worker (dev only)                                                          |
-| Quality gates | ESLint (flat config), Prettier, husky (pre-commit + commitlint), commitizen              |
+| Area          | Choice                                                                                          |
+| ------------- | ----------------------------------------------------------------------------------------------- |
+| UI            | React 19 (form actions: `useActionState`, `useFormStatus`), TypeScript 6                        |
+| Routing       | React Router 8 (`createBrowserRouter`, URL search params)                                       |
+| Build / dev   | Vite 8 (`@vitejs/plugin-react`)                                                                 |
+| Styling       | Tailwind CSS v4 (`@tailwindcss/vite`), `tw-animate-css`, Geist variable font                    |
+| Components    | [shadcn/ui](https://ui.shadcn.com) (`base-nova` style on `@base-ui/react`), lucide icons        |
+| Dates         | `date-fns`, `react-day-picker` (shadcn calendar)                                                |
+| Variants      | `class-variance-authority` + `cn()`                                                             |
+| Mock backend  | MSW 3 service worker (dev only)                                                                 |
+| Quality gates | ESLint (flat config), Prettier, husky (lint-staged + commitlint), commitizen, GitHub Actions CI |
 
 ## Getting started
 
@@ -179,12 +179,16 @@ If MSW is upgraded, regenerate the worker file with `npx msw init public`.
 
 ## Commits
 
-Commit messages must follow [Conventional Commits](https://www.conventionalcommits.org), e.g. `feat(jobs): add job form` or `fix(badge): correct colors`. A husky `commit-msg` hook runs commitlint and rejects messages that don't conform. A `pre-commit` hook runs lint-staged (ESLint on staged `.js/.jsx/.ts/.tsx` files) and a type-check (`tsc -b --noEmit`).
+Commit messages must follow [Conventional Commits](https://www.conventionalcommits.org), e.g. `feat(jobs): add job form` or `fix(badge): correct colors`. A husky `commit-msg` hook runs commitlint and rejects messages that don't conform. A `pre-commit` hook runs lint-staged (ESLint on staged `.js/.jsx/.ts/.tsx` files) and blocks the commit on lint errors. The full type-check runs in CI instead (see below), so unfinished, unstaged files never block a commit.
 
 ```bash
 npm run commit                          # guided prompt
 echo "feat: x" | npx commitlint         # check a message without committing
 ```
+
+## CI
+
+[`ci.yml`](.github/workflows/ci.yml) runs on every pull request to `master`. It runs `npm run lint`, then `npm run format:check`, then `npm run build`, which type-checks with `tsc -b` and does a production build. Run the same three commands locally before opening a PR.
 
 ## Deployment
 
