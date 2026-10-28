@@ -31,7 +31,7 @@ type JobInterviewsProps = {
   interviews: Interview[]
   onChange: () => void
   onInterviewUpdated: (interview: Interview) => void
-  onInterviewDelete: (interview: Interview) => void
+  onInterviewDelete: (interviewId: string) => void
 }
 
 type OptimisticChange = { type: 'updated'; interview: Interview } | { type: 'deleted'; id: string }
@@ -61,7 +61,7 @@ export const JobInterviews = ({
 
   const [isPending, startTransition] = useTransition()
 
-  const onInterviewDoneChanges = async (checked: boolean, interview: Interview) => {
+  const onInterviewDoneChanges = (checked: boolean, interview: Interview) => {
     startTransition(async () => {
       applyOptimisticInterviews({ type: 'updated', interview: { ...interview, done: checked } })
       try {
@@ -79,17 +79,17 @@ export const JobInterviews = ({
     })
   }
 
-  const onInterviewDeleteClick = async (interview: Interview) => {
+  const onInterviewDeleteClick = (interviewId: string) => {
     startTransition(async () => {
-      applyOptimisticInterviews({ type: 'deleted', id: interview.id })
+      applyOptimisticInterviews({ type: 'deleted', id: interviewId })
       try {
-        await deleteInterview(id, interview.id)
+        await deleteInterview(id, interviewId)
         toast.add({
           type: 'success',
           title: `Interview deleted successfully`,
           priority: 'high',
         })
-        startTransition(() => onInterviewDelete(interview))
+        startTransition(() => onInterviewDelete(interviewId))
       } catch (e) {
         toast.add({
           type: 'error',
@@ -166,7 +166,7 @@ export const JobInterviews = ({
                       size="icon-sm"
                       aria-label={`Delete interview on ${formatDate(i.date, 'long')}`}
                       disabled={isPending}
-                      onClick={() => onInterviewDeleteClick(i)}
+                      onClick={() => onInterviewDeleteClick(i.id)}
                     >
                       <Trash />
                     </Button>
