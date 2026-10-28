@@ -134,7 +134,7 @@ export const JobDetails = ({ id }: JobDetailsProps) => {
                 id={state.data.id}
                 interviews={state.data.interviews}
                 onChange={() => reload()}
-                onInterviewDelete={(updatedInterview) =>
+                onInterviewUpdated={(updatedInterview) =>
                   updateData((job) => ({
                     ...job,
                     interviews: job.interviews.map((i) =>
@@ -142,10 +142,10 @@ export const JobDetails = ({ id }: JobDetailsProps) => {
                     ),
                   }))
                 }
-                onInterviewUpdated={(deletedInterview) =>
+                onInterviewDelete={(deletedInterviewId) =>
                   updateData((job) => ({
                     ...job,
-                    interviews: job.interviews.filter((i) => i.id !== deletedInterview.id),
+                    interviews: job.interviews.filter((i) => i.id !== deletedInterviewId),
                   }))
                 }
               ></JobInterviews>
