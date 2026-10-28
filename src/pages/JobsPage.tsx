@@ -26,10 +26,11 @@ export function JobsPage() {
 
   const statusParam = searchParam.get('status')
   const status = isValidStatus(statusParam) ? statusParam : ALL
-  const deferredStatus = useDeferredValue(status)
   const searchText = searchParam.get('q') ?? ''
-  const deferredSearchText = useDeferredValue(searchText)
   const search = searchText.trim().toLowerCase()
+
+  const deferredStatus = useDeferredValue(status)
+  const deferredSearchText = useDeferredValue(search)
 
   const isStale = search !== deferredSearchText || status !== deferredStatus
 
