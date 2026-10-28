@@ -18,14 +18,20 @@ import { Button } from '@/components/ui/button'
 import { AlertCircle, Briefcase, Plus, SearchX } from 'lucide-react'
 import { CreateJobDialog } from '@/features/jobs/components/CreateJobDialog'
 import { useSearchParams } from 'react-router'
+import { useDeferredValue, ViewTransition } from 'react'
+import { cn } from '@/lib/utils'
 
 export function JobsPage() {
   const [searchParam, setSearchParam] = useSearchParams()
 
   const statusParam = searchParam.get('status')
   const status = isValidStatus(statusParam) ? statusParam : ALL
+  const deferredStatus = useDeferredValue(status)
   const searchText = searchParam.get('q') ?? ''
+  const deferredSearchText = useDeferredValue(searchText)
   const search = searchText.trim().toLowerCase()
+
+  const isStale = search !== deferredSearchText || status !== deferredStatus
 
   const { state, reload } = useJobs({
     onRefreshError: (message) =>
@@ -41,12 +47,15 @@ export function JobsPage() {
     state.name === 'success' || state.name === 'refreshing' ? state.data : []
   const visibleJobs: JobApplication[] = jobs
     .filter((job) => {
-      if (search === '') return true
-      return job.company.toLowerCase().includes(search) || job.role.toLowerCase().includes(search)
+      if (deferredSearchText === '') return true
+      return (
+        job.company.toLowerCase().includes(deferredSearchText) ||
+        job.role.toLowerCase().includes(deferredSearchText)
+      )
     })
     .filter((job) => {
-      if (status === ALL) return true
-      return job.status === status
+      if (deferredStatus === ALL) return true
+      return job.status === deferredStatus
     })
 
   const onJobDelete = (id: string) => {
@@ -108,7 +117,7 @@ export function JobsPage() {
               next.set('status', status)
               return next
             },
-            { replace: true },
+            { replace: true, flushSync: true },
           )
         }
         searchText={searchText}
@@ -123,7 +132,7 @@ export function JobsPage() {
               next.set('q', value)
               return next
             },
-            { replace: true },
+            { replace: true, flushSync: true },
           )
         }
       ></JobFilters>
@@ -152,7 +161,7 @@ export function JobsPage() {
         ></ErrorState>
       )}
 
-      <ul className="grid gap-3">
+      <ul className={cn('grid gap-3 transition-opacity', isStale && 'opacity-60')}>
         {state.name === 'loading' && (
           <>
             {[1, 2, 3].map((value) => (
@@ -165,17 +174,19 @@ export function JobsPage() {
 
         {visibleJobs.map((job) => {
           return (
-            <li key={job.id}>
-              <JobCard
-                id={job.id}
-                company={job.company}
-                createdAt={job.createdAt}
-                interviews={job.interviews}
-                role={job.role}
-                status={job.status}
-                onDelete={onJobDelete}
-              ></JobCard>
-            </li>
+            <ViewTransition key={job.id}>
+              <li>
+                <JobCard
+                  id={job.id}
+                  company={job.company}
+                  createdAt={job.createdAt}
+                  interviews={job.interviews}
+                  role={job.role}
+                  status={job.status}
+                  onDelete={onJobDelete}
+                ></JobCard>
+              </li>
+            </ViewTransition>
           )
         })}
       </ul>
