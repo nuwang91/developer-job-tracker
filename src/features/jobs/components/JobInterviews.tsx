@@ -24,53 +24,81 @@ import { CreateInterviewDialog } from '@/features/jobs/components/CreateIntervie
 import { deleteInterview, updateInterview } from '@/features/jobs/api'
 import { toast } from '@/components/ui/toast'
 import { ApiError } from '@/lib/ApiError'
-import { useState } from 'react'
+import { useOptimistic, useTransition } from 'react'
 
 type JobInterviewsProps = {
   id: string
   interviews: Interview[]
   onChange: () => void
+  onInterviewUpdated: (interview: Interview) => void
+  onInterviewDelete: (interview: Interview) => void
 }
-export const JobInterviews = ({ id, interviews, onChange }: JobInterviewsProps) => {
-  const [pending, setPending] = useState(false)
 
-  const onDoneChanges = async (checked: boolean, interviewId: string) => {
-    setPending(true)
-    try {
-      await updateInterview(id, interviewId, { done: checked })
-      onChange()
-    } catch (e) {
-      toast.add({
-        type: 'error',
-        title: "Couldn't update",
-        description: e instanceof ApiError ? e.message : 'Something went wrong!',
-        priority: 'high',
-      })
-    } finally {
-      setPending(false)
-    }
+type OptimisticChange = { type: 'updated'; interview: Interview } | { type: 'deleted'; id: string }
+
+export const JobInterviews = ({
+  id,
+  interviews,
+  onChange,
+  onInterviewDelete,
+  onInterviewUpdated,
+}: JobInterviewsProps) => {
+  const [optimisticInterviews, applyOptimisticInterviews] = useOptimistic(
+    interviews, // the real state
+    (current, change: OptimisticChange) => {
+      switch (change.type) {
+        case 'updated':
+          return current.map((i) => (i.id === change.interview.id ? change.interview : i))
+        case 'deleted':
+          return current.filter((i) => i.id !== change.id)
+        default: {
+          const _exhaustive: never = change
+          return _exhaustive
+        }
+      }
+    },
+  )
+
+  const [isPending, startTransition] = useTransition()
+
+  const onInterviewDoneChanges = async (checked: boolean, interview: Interview) => {
+    startTransition(async () => {
+      applyOptimisticInterviews({ type: 'updated', interview: { ...interview, done: checked } })
+      try {
+        const updated = await updateInterview(id, interview.id, { done: checked })
+        startTransition(() => onInterviewUpdated(updated))
+      } catch (e) {
+        // no rollback needed: the optimistic value is dropped when the transition ends
+        toast.add({
+          type: 'error',
+          title: "Couldn't update",
+          description: e instanceof ApiError ? e.message : 'Something went wrong!',
+          priority: 'high',
+        })
+      }
+    })
   }
 
-  const onInterviewDelete = async (interviewId: string) => {
-    setPending(true)
-    try {
-      await deleteInterview(id, interviewId)
-      toast.add({
-        type: 'success',
-        title: `Interview deleted successfully`,
-        priority: 'high',
-      })
-      onChange()
-    } catch (e) {
-      toast.add({
-        type: 'error',
-        title: "Couldn't delete",
-        description: e instanceof ApiError ? e.message : 'Something went wrong!',
-        priority: 'high',
-      })
-    } finally {
-      setPending(false)
-    }
+  const onInterviewDeleteClick = async (interview: Interview) => {
+    startTransition(async () => {
+      applyOptimisticInterviews({ type: 'deleted', id: interview.id })
+      try {
+        await deleteInterview(id, interview.id)
+        toast.add({
+          type: 'success',
+          title: `Interview deleted successfully`,
+          priority: 'high',
+        })
+        startTransition(() => onInterviewDelete(interview))
+      } catch (e) {
+        toast.add({
+          type: 'error',
+          title: "Couldn't delete",
+          description: e instanceof ApiError ? e.message : 'Something went wrong!',
+          priority: 'high',
+        })
+      }
+    })
   }
 
   const onInterviewCreated = () => {
@@ -102,7 +130,7 @@ export const JobInterviews = ({ id, interviews, onChange }: JobInterviewsProps) 
       <div className="mb-2 flex items-center justify-between">
         <h2 className="text-sm font-semibold">
           Interviews
-          <span className="ml-2 text-muted-foreground">({interviews.length})</span>
+          <span className="ml-2 text-muted-foreground">({optimisticInterviews.length})</span>
         </h2>
         {addInterview()}
       </div>
@@ -116,8 +144,8 @@ export const JobInterviews = ({ id, interviews, onChange }: JobInterviewsProps) 
           </TableRow>
         </TableHeader>
         <TableBody>
-          {interviews.length > 0 ? (
-            interviews
+          {optimisticInterviews.length > 0 ? (
+            optimisticInterviews
               .toSorted((a, b) => {
                 return new Date(a.date).getTime() - new Date(b.date).getTime()
               })
@@ -128,8 +156,8 @@ export const JobInterviews = ({ id, interviews, onChange }: JobInterviewsProps) 
                     <Checkbox
                       aria-label={`Interview on ${formatDate(i.date, 'long')} done`}
                       checked={i.done}
-                      disabled={pending}
-                      onCheckedChange={(checked) => onDoneChanges(checked, i.id)}
+                      disabled={isPending}
+                      onCheckedChange={(checked) => onInterviewDoneChanges(checked, i)}
                     />
                   </TableCell>
                   <TableCell>
@@ -137,8 +165,8 @@ export const JobInterviews = ({ id, interviews, onChange }: JobInterviewsProps) 
                       variant="ghost"
                       size="icon-sm"
                       aria-label={`Delete interview on ${formatDate(i.date, 'long')}`}
-                      disabled={pending}
-                      onClick={() => onInterviewDelete(i.id)}
+                      disabled={isPending}
+                      onClick={() => onInterviewDeleteClick(i)}
                     >
                       <Trash />
                     </Button>

@@ -30,6 +30,14 @@ export const useJob = ({ id, onRefreshError }: UseJobOptions) => {
     })
   }
 
+  const updateData = (updater: (job: JobApplication) => JobApplication) => {
+    setJob((prev) =>
+      prev.name === 'success' || prev.name === 'refreshing'
+        ? { name: 'success', data: updater(prev.data) }
+        : prev,
+    )
+  }
+
   const handleFailure = useEffectEvent((e: unknown) => {
     if (state.name === 'refreshing') {
       setJob({
@@ -60,5 +68,5 @@ export const useJob = ({ id, onRefreshError }: UseJobOptions) => {
     return () => abortController.abort()
   }, [id, reloadKey])
 
-  return { state, reload }
+  return { state, reload, updateData }
 }

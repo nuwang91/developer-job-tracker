@@ -18,7 +18,7 @@ export type JobDetailsProps = {
   id: string
 }
 export const JobDetails = ({ id }: JobDetailsProps) => {
-  const { state, reload } = useJob({
+  const { state, reload, updateData } = useJob({
     id,
     onRefreshError: (message) =>
       toast.add({
@@ -134,6 +134,20 @@ export const JobDetails = ({ id }: JobDetailsProps) => {
                 id={state.data.id}
                 interviews={state.data.interviews}
                 onChange={() => reload()}
+                onInterviewDelete={(updatedInterview) =>
+                  updateData((job) => ({
+                    ...job,
+                    interviews: job.interviews.map((i) =>
+                      i.id === updatedInterview.id ? updatedInterview : i,
+                    ),
+                  }))
+                }
+                onInterviewUpdated={(deletedInterview) =>
+                  updateData((job) => ({
+                    ...job,
+                    interviews: job.interviews.filter((i) => i.id !== deletedInterview.id),
+                  }))
+                }
               ></JobInterviews>
             </CardContent>
           </Card>
