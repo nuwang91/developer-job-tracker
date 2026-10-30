@@ -29,6 +29,7 @@ export function JobsPage() {
   const searchText = searchParam.get('q') ?? ''
   const search = searchText.trim().toLowerCase()
 
+  // There is no guaranteed duration of delay. It might catch up almost immediately on a fast render, or take longer if rendering is expensive.
   const deferredStatus = useDeferredValue(status)
   const deferredSearchText = useDeferredValue(search)
 
