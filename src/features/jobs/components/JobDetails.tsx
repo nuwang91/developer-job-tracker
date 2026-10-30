@@ -13,7 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { EmptyState } from '@/components/EmptyState'
 import { ErrorState } from '@/components/ErrorState'
 import { JobInterviews } from './JobInterviews'
-import { Tabs } from '@/components/Tabs'
+import { SectionSwitcher } from '@/components/SectionSwitcher'
 import { Activity, useState } from 'react'
 import { Textarea } from '@/components/ui/textarea'
 
@@ -22,6 +22,10 @@ export type JobDetailsProps = {
 }
 
 const TAB_OPTIONS = ['overview', 'interviews', 'notes'] as const
+
+const getTabLabel = (tab: string) => {
+  return tab.charAt(0).toUpperCase() + tab.slice(1, tab.length)
+}
 
 type TabTypes = (typeof TAB_OPTIONS)[number]
 
@@ -129,7 +133,15 @@ export const JobDetails = ({ id }: JobDetailsProps) => {
             </div>
           </div>
 
-          <Tabs option={activeTab} options={TAB_OPTIONS} onTabChange={setActiveTab}></Tabs>
+          <div className="mt-6">
+            <SectionSwitcher
+              option={activeTab}
+              options={TAB_OPTIONS}
+              onTabChange={setActiveTab}
+              ariaLabel="Job Details Tabs"
+              getLabel={getTabLabel}
+            ></SectionSwitcher>
+          </div>
 
           <Activity mode={activeTab === 'overview' ? 'visible' : 'hidden'}>
             <Card className="mt-6">
@@ -169,7 +181,8 @@ export const JobDetails = ({ id }: JobDetailsProps) => {
           </Activity>
 
           <Activity mode={activeTab === 'notes' ? 'visible' : 'hidden'}>
-            <Textarea />
+            <label htmlFor="notes-draft">Notes</label>
+            <Textarea id="notes-draft" />
           </Activity>
         </>
       )}
