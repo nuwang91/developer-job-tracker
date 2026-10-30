@@ -13,11 +13,20 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { EmptyState } from '@/components/EmptyState'
 import { ErrorState } from '@/components/ErrorState'
 import { JobInterviews } from './JobInterviews'
+import { Tabs } from '@/components/Tabs'
+import { Activity, useState } from 'react'
+import { Textarea } from '@/components/ui/textarea'
 
 export type JobDetailsProps = {
   id: string
 }
+
+const TAB_OPTIONS = ['overview', 'interviews', 'notes'] as const
+
+type TabTypes = (typeof TAB_OPTIONS)[number]
+
 export const JobDetails = ({ id }: JobDetailsProps) => {
+  const [activeTab, setActiveTab] = useState<TabTypes>(TAB_OPTIONS[0])
   const { state, reload, updateData } = useJob({
     id,
     onRefreshError: (message) =>
@@ -120,37 +129,48 @@ export const JobDetails = ({ id }: JobDetailsProps) => {
             </div>
           </div>
 
-          <Card className="mt-6">
-            <CardContent>
-              <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
-                <dt className="text-muted-foreground">Applied</dt>
-                <dd>{formatDate(state.data.createdAt, 'short')}</dd>
-                <dt className="text-muted-foreground">Interviews</dt>
-                <dd>{state.data.interviews.length}</dd>
-                <dt className="text-muted-foreground">Notes</dt>
-                <dd className="whitespace-pre-wrap">{state.data.notes || '—'}</dd>
-              </dl>
-              <JobInterviews
-                id={state.data.id}
-                interviews={state.data.interviews}
-                onChange={() => reload()}
-                onInterviewUpdated={(updatedInterview) =>
-                  updateData((job) => ({
-                    ...job,
-                    interviews: job.interviews.map((i) =>
-                      i.id === updatedInterview.id ? updatedInterview : i,
-                    ),
-                  }))
-                }
-                onInterviewDelete={(deletedInterviewId) =>
-                  updateData((job) => ({
-                    ...job,
-                    interviews: job.interviews.filter((i) => i.id !== deletedInterviewId),
-                  }))
-                }
-              ></JobInterviews>
-            </CardContent>
-          </Card>
+          <Tabs option={activeTab} options={TAB_OPTIONS} onTabChange={setActiveTab}></Tabs>
+
+          <Activity mode={activeTab === 'overview' ? 'visible' : 'hidden'}>
+            <Card className="mt-6">
+              <CardContent>
+                <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
+                  <dt className="text-muted-foreground">Applied</dt>
+                  <dd>{formatDate(state.data.createdAt, 'short')}</dd>
+                  <dt className="text-muted-foreground">Interviews</dt>
+                  <dd>{state.data.interviews.length}</dd>
+                  <dt className="text-muted-foreground">Notes</dt>
+                  <dd className="whitespace-pre-wrap">{state.data.notes || '—'}</dd>
+                </dl>
+              </CardContent>
+            </Card>
+          </Activity>
+
+          <Activity mode={activeTab === 'interviews' ? 'visible' : 'hidden'}>
+            <JobInterviews
+              id={state.data.id}
+              interviews={state.data.interviews}
+              onChange={() => reload()}
+              onInterviewUpdated={(updatedInterview) =>
+                updateData((job) => ({
+                  ...job,
+                  interviews: job.interviews.map((i) =>
+                    i.id === updatedInterview.id ? updatedInterview : i,
+                  ),
+                }))
+              }
+              onInterviewDelete={(deletedInterviewId) =>
+                updateData((job) => ({
+                  ...job,
+                  interviews: job.interviews.filter((i) => i.id !== deletedInterviewId),
+                }))
+              }
+            ></JobInterviews>
+          </Activity>
+
+          <Activity mode={activeTab === 'notes' ? 'visible' : 'hidden'}>
+            <Textarea />
+          </Activity>
         </>
       )}
     </>

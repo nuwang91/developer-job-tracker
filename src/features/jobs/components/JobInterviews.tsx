@@ -24,7 +24,7 @@ import { CreateInterviewDialog } from '@/features/jobs/components/CreateIntervie
 import { deleteInterview, updateInterview } from '@/features/jobs/api'
 import { toast } from '@/components/ui/toast'
 import { ApiError } from '@/lib/ApiError'
-import { useOptimistic, useTransition } from 'react'
+import { useEffect, useOptimistic, useTransition } from 'react'
 
 type JobInterviewsProps = {
   id: string
@@ -43,6 +43,10 @@ export const JobInterviews = ({
   onInterviewDelete,
   onInterviewUpdated,
 }: JobInterviewsProps) => {
+  useEffect(() => {
+    console.log('Interviews effect on')
+    return () => console.log('Interviews effect off')
+  }, [])
   const [optimisticInterviews, applyOptimisticInterviews] = useOptimistic(
     interviews, // the real state
     (current, change: OptimisticChange) => {

@@ -18,7 +18,7 @@ const notFound = (message?: string) =>
 export const handlers = [
   http.get('/api/jobs', async () => {
     await delay(2000)
-    return HttpResponse.json({ message: 'Boom' }, { status: 500 })
+    // return HttpResponse.json({ message: 'Boom' }, { status: 500 })
     // return new HttpResponse('not json', { headers: { 'Content-Type': 'application/json' } })
     return HttpResponse.json(jobs)
   }),

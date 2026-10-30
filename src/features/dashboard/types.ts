@@ -10,10 +10,10 @@ export interface DashboardStats {
 type StatType = keyof DashboardStats
 
 export const STATS: { key: StatType; label: string }[] = [
+  { key: 'totalApplications', label: 'Total applications' },
   { key: 'appliedCount', label: 'Applied' },
   { key: 'interviewCount', label: 'Interview' },
   { key: 'offerCount', label: 'Offer' },
-  { key: 'pendingInterviews', label: 'Upcoming interviews' },
   { key: 'rejectedCount', label: 'Rejected' },
-  { key: 'totalApplications', label: 'Total applications' },
+  { key: 'pendingInterviews', label: 'Upcoming interviews' },
 ]
